@@ -5,8 +5,17 @@
     <link rel="icon" type="image/svg+xml" href="/nut-mark.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Popup - Nuxt Mark</title>
+    <style>
+      body {
+        overflow: overlay
+      }
+
+      body::-webkit-scrollbar {
+        display: none;
+      }
+    </style>
   </head>
-  <body>
+  <body class="w-[800px] h-[600px] overflow-auto">
     <div id="app"></div>
     <script type="module" src="./main.js"></script>
   </body>

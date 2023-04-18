@@ -2,11 +2,34 @@
   "manifest_version": 3,
   "name": "Nut Mark",
   "version": "1.0.0",
+  "description": "Nut Mark is a browser extension to help you collect bookmarks more easily.",
+  "permissions": [
+    "bookmarks",
+    "tabs",
+    "favicon"
+  ],
+  "background": {
+    "service_worker": "src/background/main.js",
+    "type": "module"
+  },
   "action": {
-    "default_popup": "src/popup/index.html"
+    "default_title": "Nut Mark",
+    "default_popup": "src/popup/index.html",
+    "default_icon": {
+      "16": "src/assets/icons/nut-unmark-16x16.png",
+      "32": "src/assets/icons/nut-unmark-32x32.png",
+      "48": "src/assets/icons/nut-unmark-48x48.png",
+      "128": "src/assets/icons/nut-unmark-128x128.png"
+    }
   },
   "options_ui": {
     "page": "src/options/index.html",
     "open_in_tab": true
+  },
+  "icons": {
+    "16": "src/assets/icons/nut-mark-16x16.png",
+    "32": "src/assets/icons/nut-mark-32x32.png",
+    "48": "src/assets/icons/nut-mark-48x48.png",
+    "128": "src/assets/icons/nut-mark-128x128.png"
   }
 }
