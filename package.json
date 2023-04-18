@@ -1,0 +1,26 @@
+{
+  "name": "nut-mark",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "vue": "^3.2.47"
+  },
+  "devDependencies": {
+    "@crxjs/vite-plugin": "^2.0.0-beta.15",
+    "@vitejs/plugin-vue": "^4.1.0",
+    "autoprefixer": "^10.4.14",
+    "eslint": "^7.32.0 || ^8.2.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.25.2",
+    "eslint-plugin-vue": "^9.10.0",
+    "postcss": "^8.4.22",
+    "tailwindcss": "^3.3.1",
+    "vite": "^4.2.0"
+  }
+}
