@@ -1,7 +1,7 @@
+![Nut Mark](./public/nut-mark-cover.png)
+
 # Nut Mark
 Nut Mark is a browser extension to help you collect bookmarks more easily.
-
-![Nut Mark](./public/nut-mark-cover.png)
 
 ## Why call "Nut Mark"
 I like to collect and organize bookmarks like a squirrel hoards nuts, so I build this browser extension and call it "Nut Mark".
