@@ -1,8 +1,12 @@
 {
   "manifest_version": 3,
-  "name": "tagdown-demo",
+  "name": "Nut Mark",
   "version": "1.0.0",
   "action": {
-    "default_popup": "index.html"
+    "default_popup": "src/popup/index.html"
+  },
+  "options_ui": {
+    "page": "src/options/index.html",
+    "open_in_tab": true
   }
 }
