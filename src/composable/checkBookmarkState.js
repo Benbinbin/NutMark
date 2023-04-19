@@ -1,5 +1,5 @@
 export async function useCheckBookmarkState(url) {
-  console.log(url);
+  // console.log(url);
   const nodes = await chrome.bookmarks.search({
     url,
   });

@@ -8,7 +8,16 @@ const bookmarkState = ref(false)
 const bookmarkTitle = ref('')
 const bookmarkURL = ref('')
 const iconURL = ref('')
+// an object stand for node tree (with children property)
+const nodesTree = ref(null)
+// an object stand for the select folder
+// without children property
+const selectFolderNode = ref(null)
+
 onMounted(async () => {
+  /**
+   * current tab information and bookmark state
+   */
   // get current tab
   const [tab] = await chrome.tabs.query({
     active: true,
@@ -22,22 +31,68 @@ onMounted(async () => {
   iconURL.value = useGetFaviconURL(bookmarkURL.value)
 
   bookmarkState.value = await useCheckBookmarkState(bookmarkURL.value);
+
+  /**
+   * recent bookmark, folder and node tree
+   */
+  // get recently created bookmarks
+  const recentBookmarkArr = await chrome.bookmarks.getRecent(1)
+  console.log('get recent bookmarks', recentBookmarkArr);
+
+  if(recentBookmarkArr.length > 0) {
+    // if there is a bookmark created recently
+    const recentBookmark = recentBookmarkArr[0]
+
+    // get the folder node which the recently created bookmark belongs to
+    const resultForSelectFolderNode = await chrome.bookmarks.get(recentBookmark.parentId)
+    selectFolderNode.value = resultForSelectFolderNode[0]
+    // console.log(selectFolderNode.value);
+    // get the node tree which the folder node belongs to
+    if(selectFolderNode.value.parentId) {
+      console.log('get node tree');
+      const resultForNodeTree = (await chrome.bookmarks.getSubTree(selectFolderNode.value.parentId))
+      nodesTree.value = resultForNodeTree[0]
+    } else {
+      const resultForNodeTree = await chrome.bookmarks.getSubTree(recentBookmark.parentId)
+      nodesTree.value = resultForNodeTree[0]
+    }
+
+  } else {
+    // if there isn't any bookmarks created recently (for a new browser)
+    // get the node tree from root node
+    const resultForNodeTree = await chrome.bookmarks.getSubTree('0')
+    nodesTree.value = resultForNodeTree[0]
+    // and set the first children node as the select folder node
+    const resultForSelectFolderNode = await chrome.bookmarks.get(nodesTree.value.children[0].id)
+    selectFolderNode.value = resultForSelectFolderNode[0]
+  }
+
+  console.log('select folder node', selectFolderNode.value);
+  console.log('node tree', nodesTree.value);
 })
 
+// change textarea input box height
 const changeHeightHandler = (event) => {
   event.target.style.height = 'auto'
   event.target.style.height = `${event.target.scrollHeight}px`
-
 }
 </script>
 
 <template>
   <div>
-    <header class="px-4 py-3 flex justify-between sticky top-0 inset-x-0 bg-gray-50 border-b shadow">
+    <header class="px-4 py-2.5 flex justify-between sticky top-0 inset-x-0 bg-gray-50 border-b shadow">
       <div class="flex justify-center items-center gap-2">
         <!-- <img v-if="iconURL" :src="iconURL" alt="bookmark icon" class="w-6 h-6"> -->
-        <Iconify icon="emojione:bookmark" class="inline-block w-6 h-6"></Iconify>
-        <span class="px-2 py-1 text-xs font-thin text-white rounded" :class="bookmarkState ? 'bg-amber-500' : 'bg-emerald-500'">{{ bookmarkState ? '已保存' : '未保存' }}</span>
+        <Iconify icon="ph:planet-fill" class="inline-block w-6 h-6 text-purple-500"></Iconify>
+      </div>
+      <div class="flex justify-center items-center gap-2">
+        <button class="group px-2 py-1 flex justify-center items-center gap-1 text-xs font-bold hover:text-white bg-transparent border-2 rounded transition-colors duration-300" :class="bookmarkState ? 'text-amber-500 hover:bg-red-500 border-amber-500 hover:border-red-500' : 'text-emerald-500 hover:bg-emerald-500 border-emerald-500'">
+          <img v-if="bookmarkState" src="@/assets/nut-mark.svg" alt="nut mark icon" class="w-4 h-4">
+          <img v-else src="@/assets/nut-unmark.svg" alt="nut unmark icon" class="w-4 h-4">
+          <span class="inline-block group-hover:hidden">{{ bookmarkState ? '已收藏' : '未收藏' }}</span>
+          <span v-if="bookmarkState" class="w-[36px] hidden group-hover:inline-block">删除</span>
+          <span v-else class="w-[36px] hidden group-hover:inline-block">添加</span>
+        </button>
       </div>
     </header>
     <main class="p-4 space-y-2">
@@ -59,13 +114,24 @@ const changeHeightHandler = (event) => {
           <textarea name="bookmark url" id="bookmark-url" class="text-blue-600 placeholder:text-blue-200" placeholder="请输入书签的链接地址" v-model="bookmarkURL" @input="changeHeightHandler"></textarea>
         </div>
       </section>
-        <section class="">
-          <p class="section-title text-amber-400">
-            <Iconify icon="ph:folder-notch-fill" class="section-title-icon"></Iconify>
-            <span class="text-base font-semibold">文件夹</span>
-          </p>
+        <section>
+          <div class="flex justify-between items-center">
+            <div class="flex justify-start items-center gap-4">
+              <p class="section-title text-amber-400">
+                <Iconify icon="ph:folder-notch-fill" class="section-title-icon"></Iconify>
+                <span class="text-base font-semibold">文件夹</span>
+              </p>
+              <button class="group px-2 py-1 rounded transition-colors duration-300" :class="selectFolderNode ? 'hover:bg-amber-400' : ''" :disabled="!selectFolderNode">
+                <span v-if="selectFolderNode" class="text-amber-400 font-bold group-hover:text-white underline decoration-2 decoration-amber-400 underline-offset-4">{{ selectFolderNode.title }}</span>
+                <span v-else class="text-xs font-bold text-amber-300 underline decoration-2 decoration-amber-300 underline-offset-4">请选择文件夹 👇</span>
+              </button>
+            </div>
+            <button class="p-1.5 text-amber-400 hover:text-white hover:bg-amber-400 rounded transition-colors duration-300">
+              <Iconify icon="ph:magnifying-glass" class="w-4 h-4"></Iconify>
+            </button>
+          </div>
           <div class="w-full max-h-[500px] border border-amber-200 rounded-md">
-            folder
+
           </div>
         </section>
     </main>
