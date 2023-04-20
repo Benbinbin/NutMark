@@ -1,8 +1,9 @@
 <script setup>
-import { onMounted, ref } from 'vue';
-import { useCheckBookmarkState } from '@/composable/checkBookmarkState'
-import { useGetFaviconURL } from '@/composable/getFaviconURL'
+import { onMounted, ref, computed } from 'vue';
+import { useCheckBookmarkState } from '@/composables/checkBookmarkState'
+import { useGetFaviconURL } from '@/composables/getFaviconURL'
 import { Icon as Iconify, loadIcon } from '@iconify/vue'
+import FolderGrid from './components/FolderGrid.vue'
 
 const bookmarkState = ref(false)
 const bookmarkTitle = ref('')
@@ -10,6 +11,22 @@ const bookmarkURL = ref('')
 const iconURL = ref('')
 // an object stand for node tree (with children property)
 const nodesTree = ref(null)
+const sortedNodes = computed(() => {
+  if(nodesTree.value) {
+    nodesTree.value.children.sort((nodeA, nodeB) => {
+      if (nodeA.children && !nodeB.children) {
+        return -1
+      } else if (!nodeA.children && nodeB.children) {
+        return 1
+      } else {
+        return 0
+      }
+    })
+    return nodesTree.value.children
+  } else {
+    return []
+  }
+})
 // an object stand for the select folder
 // without children property
 const selectFolderNode = ref(null)
@@ -114,26 +131,26 @@ const changeHeightHandler = (event) => {
           <textarea name="bookmark url" id="bookmark-url" class="text-blue-600 placeholder:text-blue-200" placeholder="请输入书签的链接地址" v-model="bookmarkURL" @input="changeHeightHandler"></textarea>
         </div>
       </section>
-        <section>
-          <div class="flex justify-between items-center">
-            <div class="flex justify-start items-center gap-4">
-              <p class="section-title text-amber-400">
-                <Iconify icon="ph:folder-notch-fill" class="section-title-icon"></Iconify>
-                <span class="text-base font-semibold">文件夹</span>
-              </p>
-              <button class="group px-2 py-1 rounded transition-colors duration-300" :class="selectFolderNode ? 'hover:bg-amber-400' : ''" :disabled="!selectFolderNode">
-                <span v-if="selectFolderNode" class="text-amber-400 font-bold group-hover:text-white underline decoration-2 decoration-amber-400 underline-offset-4">{{ selectFolderNode.title }}</span>
-                <span v-else class="text-xs font-bold text-amber-300 underline decoration-2 decoration-amber-300 underline-offset-4">请选择文件夹 👇</span>
-              </button>
-            </div>
-            <button class="p-1.5 text-amber-400 hover:text-white hover:bg-amber-400 rounded transition-colors duration-300">
-              <Iconify icon="ph:magnifying-glass" class="w-4 h-4"></Iconify>
+      <section>
+        <div class="flex justify-between items-center">
+          <div class="flex justify-start items-center gap-4">
+            <p class="section-title text-amber-400">
+              <Iconify icon="ph:folder-notch-fill" class="section-title-icon"></Iconify>
+              <span class="text-base font-semibold">文件夹</span>
+            </p>
+            <button class="group px-2 py-1 rounded transition-colors duration-300" :class="selectFolderNode ? 'hover:bg-amber-400' : ''" :disabled="!selectFolderNode">
+              <span v-if="selectFolderNode" class="text-amber-400 font-bold group-hover:text-white underline decoration-2 decoration-amber-400 underline-offset-4">{{ selectFolderNode.title }}</span>
+              <span v-else class="text-xs font-bold text-amber-300 underline decoration-2 decoration-amber-300 underline-offset-4">请选择文件夹 👇</span>
             </button>
           </div>
-          <div class="w-full max-h-[500px] border border-amber-200 rounded-md">
-
-          </div>
-        </section>
+          <button class="p-1.5 text-amber-400 hover:text-white hover:bg-amber-400 rounded transition-colors duration-300">
+            <Iconify icon="ph:magnifying-glass" class="w-4 h-4"></Iconify>
+          </button>
+        </div>
+        <div class="w-full max-h-[500px] p-2 border border-amber-200 rounded-md">
+          <FolderGrid :nodes="sortedNodes"></FolderGrid>
+        </div>
+      </section>
     </main>
   </div>
 </template>

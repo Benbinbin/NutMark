@@ -1,5 +1,5 @@
-import { useCheckBookmarkState } from '@/composable/checkBookmarkState'
-import { useChangeActionIcon } from '@/composable/changeActionIcon'
+import { useCheckBookmarkState } from '@/composables/checkBookmarkState'
+import { useChangeActionIcon } from '@/composables/changeActionIcon'
 
 // let activeTabID = NaN;
 
