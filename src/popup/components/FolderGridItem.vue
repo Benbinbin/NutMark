@@ -1,20 +1,12 @@
 <script setup>
-import { defineProps, ref, nextTick } from 'vue'
+import { ref, nextTick } from 'vue'
+import { Icon as Iconify } from '@iconify/vue'
+import { useGetFaviconURL } from '@/composables/getFaviconURL'
 
-const props = defineProps(['rootName', 'rootTree', 'rootIndex'])
+const props = defineProps(['rootName', 'rootTree'])
 const emits = defineEmits(['set-tree'])
 
 const expand = ref(true)
-
-// const getFileTypeIcon = (type: string) => {
-//   const fileType = fileTypeMap.value[type]
-
-//   if (!fileType) {
-//     return fileTypeMap.value.default.iconName
-//   } else {
-//     return fileType.iconName
-//   }
-// }
 
 /**
  *
@@ -27,7 +19,6 @@ const folderNavArr = ref([
     path: []
   }
 ])
-
 
 // this is the current folder after drive down
 const currentTree = ref([])
@@ -94,7 +85,7 @@ const addFolderNav = (title, index) => {
 }
 
 const setTreeHandler = () => {
-  const path = [props.rootIndex, ...folderNavPath]
+  const path = [...folderNavPath]
   emits('set-tree', path, 'drill-down')
 }
 
@@ -103,24 +94,24 @@ const setTreeHandler = () => {
  * scroll the folder nav
  *
  */
-const showScrollBtn = ref(true)
+const showScrollBtn = ref(false)
 
 const scrollPos = ref('start')
 
-const folderNavContainer = ref(null) // get the folderNav container DOM
+const folderNavContainerDOM = ref(null) // get the folderNav container DOM
 
 const rejudgeShowScrollBtn = () => {
   // show of hide the scroll button
-  if (folderNavContainer.value) {
-    if (folderNavContainer.value.scrollWidth <= folderNavContainer.value.clientWidth) {
+  if (folderNavContainerDOM.value) {
+    if (folderNavContainerDOM.value.scrollWidth <= folderNavContainerDOM.value.clientWidth) {
       showScrollBtn.value = false
     } else {
       showScrollBtn.value = true
     }
 
-    if (Math.ceil(folderNavContainer.value.scrollLeft + folderNavContainer.value.clientWidth) >= folderNavContainer.value.scrollWidth) {
+    if (Math.ceil(folderNavContainerDOM.value.scrollLeft + folderNavContainerDOM.value.clientWidth) >= folderNavContainerDOM.value.scrollWidth) {
       scrollPos.value = 'end'
-    } else if (folderNavContainer.value.scrollLeft === 0) {
+    } else if (folderNavContainerDOM.value.scrollLeft === 0) {
       scrollPos.value = 'start'
     } else {
       scrollPos.value = 'middle'
@@ -129,21 +120,21 @@ const rejudgeShowScrollBtn = () => {
 }
 
 const scrollFolderNavHandler = (direction) => {
-  if (!folderNavContainer.value) { return }
-  const containerWidth = folderNavContainer.value.clientWidth
+  if (!folderNavContainerDOM.value) { return }
+  const containerWidth = folderNavContainerDOM.value.clientWidth
 
   if (direction === 'left') {
-    folderNavContainer.value.scrollLeft -= containerWidth
+    folderNavContainerDOM.value.scrollLeft -= containerWidth
   } else if (direction === 'right') {
-    folderNavContainer.value.scrollLeft += containerWidth
+    folderNavContainerDOM.value.scrollLeft += containerWidth
   }
 }
 
 const folderNavScrollingHandler = () => {
-  if (folderNavContainer.value) {
-    if (Math.ceil(folderNavContainer.value.scrollLeft + folderNavContainer.value.clientWidth) >= folderNavContainer.value.scrollWidth) {
+  if (folderNavContainerDOM.value) {
+    if (Math.ceil(folderNavContainerDOM.value.scrollLeft + folderNavContainerDOM.value.clientWidth) >= folderNavContainerDOM.value.scrollWidth) {
       scrollPos.value = 'end'
-    } else if (folderNavContainer.value.scrollLeft === 0) {
+    } else if (folderNavContainerDOM.value.scrollLeft === 0) {
       scrollPos.value = 'start'
     } else {
       scrollPos.value = 'middle'
@@ -152,70 +143,71 @@ const folderNavScrollingHandler = () => {
 }
 </script>
 <template>
-  <div class="self-stretch max-h-full flex"
-    :class="expand ? (props.rootTree.length <= 2 ? 'col-span-1 sm:col-span-2 row-span-2' : (props.rootTree.length <= 4 ? 'col-span-1 sm:col-span-2 row-span-3' : (props.rootTree.length <= 6 ? 'col-span-1 sm:col-span-2 row-span-4' : 'col-span-1 sm:col-span-2 row-span-5'))) : 'col-span-1'">
-    <!-- just show a folder icon when collapse -->
+  <div class="self-stretch w-full max-h-full"
+    :class="expand ? (currentTree.length <= 2 ? 'col-span-2 row-span-2' : (currentTree.length <= 4 ? 'col-span-2 row-span-3' : 'col-span-3 row-span-4')) : 'col-span-1 row-span-1'">
+    <!-- collapse the folder -->
     <button v-show="!expand" :title="props.rootName"
-      class="group w-full px-4 py-2 flex items-start gap-1 hover:text-yellow-500 hover:bg-yellow-50 rounded-lg transition-colors duration-300"
-      @click="expand = true">
-      <IconCustom name="ph:folder-fill" class="shrink-0 w-6 h-6 text-yellow-400" />
-      <span class="line-camp-2 break-all">
-        {{ props.rootName }}
-      </span>
+      class="px-2 py-1 flex justify-start items-start gap-1 text-amber-500 hover:bg-amber-100 rounded transition-colors duration-300" @click="expand = true">
+      <Iconify :icon="props.rootTree.length > 0 ? 'ph:folder-fill' : 'ph:folder'" class="shrink-0 w-5 h-5" />
+      <span class="text-sm font-bold break-all">{{ props.rootName }}</span>
     </button>
-    <!-- show a nav bar at the top and the children item of the folder -->
-    <div v-show="expand" class="w-full flex flex-col">
+    <!-- expand the folder -->
+    <div v-show="expand" class="w-full h-full flex flex-col">
       <!-- a nav bar -->
-      <div class="w-full flex justify-between items-center">
+      <div class="shrink-0 w-full flex justify-between items-center">
+        <!-- current folder node, the first item of folder nav -->
         <button
-          class="shrink-0 group w-fit p-2 flex items-center gap-1 relative z-10 text-xs hover:text-yellow-500 active:text-white bg-white hover:bg-yellow-50 active:bg-yellow-500 border-t border-x rounded-t transition-colors duration-300 translate-y-px"
+          class="shrink-0 group w-fit p-2 flex justify-center items-center gap-1 relative z-10 text-xs font-bold text-amber-400 hover:text-amber-500 active:text-white bg-white hover:bg-amber-100 active:bg-amber-500 border-t border-x border-amber-300 rounded-t transition-colors duration-300 translate-y-px"
           @click="setTreeHandler">
-          <IconCustom name="ph:folder-open-fill" class="w-4 h-4 text-yellow-400 group-active:text-white" />
-          {{ folderNavArr[0].title }}
+          <Iconify :icon="currentTree.length ? 'ph:folder-open-fill' : 'ph:folder-open'" class="shrink-0 w-4 h-4 group-active:text-white" />
+          <span>{{ folderNavArr[0].title }}</span>
         </button>
-        <div v-show="folderNavArr.length > 1" ref="folderNavContainer"
+        <!-- folder nav items -->
+        <div v-show="folderNavArr.length > 1" ref="folderNavContainerDOM"
           class="folder-nav-container grow flex justify-start items-center overflow-x-auto -translate-x-1 translate-y-px scroll-smooth"
           @scroll.passive="folderNavScrollingHandler">
           <button v-for="(folder, index) in folderNavArr.slice(1)"
             :key="folder.path.length > 0 ? folder.path.join() : 'root'"
-            class="shrink-0 p-2 relative border-t border-r text-xs text-gray-400 hover:text-yellow-400 rounded-tr transition-colors duration-300"
+            class="shrink-0 p-2 relative border-t border-r border-amber-300 text-xs font-bold text-amber-400 hover:text-amber-500 hover:bg-amber-100 rounded-tr transition-colors duration-300"
             :style="`transform: translateX(-${(index * 2)}px)`" @click="setFolderNavPath(folder.path)">
             {{ folder.title }}
           </button>
         </div>
+        <!-- scroll control buttons -->
         <div class="shrink-0 pl-2 flex items-center gap-0.5">
           <button v-show="showScrollBtn" :disabled="scrollPos === 'start'"
-            class="p-1 hidden sm:flex items-center text-green-400 hover:text-green-500 bg-green-100 hover:bg-green-200 rounded-full transition-colors duration-300"
+            class="p-1 hidden sm:flex items-center text-green-500 active:text-white bg-green-100 hover:bg-green-200 active:bg-green-500 rounded-full transition-colors duration-300"
             :class="scrollPos === 'start' ? 'opacity-30' : ''" @click="scrollFolderNavHandler('left')">
-            <IconCustom name="ic:round-keyboard-arrow-left" class="w-3.5 h-3.5" />
+            <Iconify icon="ic:round-keyboard-arrow-left" class="w-3.5 h-3.5" />
           </button>
           <button v-show="showScrollBtn" :disabled="scrollPos === 'end'"
-            class="p-1 hidden sm:flex items-center text-green-400 hover:text-green-500 bg-green-100 hover:bg-green-200 rounded-full transition-colors duration-300"
+            class="p-1 hidden sm:flex items-center text-green-500 active:text-white bg-green-100 hover:bg-green-200 active:bg-green-500 rounded-full transition-colors duration-300"
             :class="scrollPos === 'end' ? 'opacity-30' : ''" @click="scrollFolderNavHandler('right')">
-            <IconCustom name="ic:round-keyboard-arrow-right" class="w-3.5 h-3.5" />
+            <Iconify icon="ic:round-keyboard-arrow-right" class="w-3.5 h-3.5" />
           </button>
           <button
-            class="p-1 flex items-center text-red-300 hover:text-red-400 bg-red-50 hover:bg-red-100 rounded-full transition-colors duration-300"
+            class="p-1 flex items-center text-red-400 active:text-white bg-red-50 hover:bg-red-100 active:bg-red-500 rounded-full transition-colors duration-300"
             @click="expand = false">
-            <IconCustom name="ion:close" class="w-3.5 h-3.5" />
+            <Iconify icon="ion:close" class="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
       <!-- children item of the folder -->
       <div
-        class="tree-container grow p-2 flex flex-wrap items-start gap-2 border rounded-b-lg rounded-tr-lg bg-white overflow-y-auto">
+        class="nodes-container grow p-2 flex flex-wrap justify-start items-start gap-2 overflow-y-auto bg-white  border border-amber-300 rounded-b-lg rounded-tr-lg shadow shadow-amber-100">
         <template v-for="(item, index) in currentTree">
-          <span v-if="!item.children" :key="item.id" class="p-2 flex items-start gap-1 rounded hover:text-blue-500 active:text-white hover:bg-blue-100 active:bg-blue-500 transition-colors duration-300">
-            <!-- <IconCustom :name="getFileTypeIcon(item._type)" class="shrink-0 w-5 h-5" /> -->
-            <span class="text-sm break-all">
-              {{ item.title }}
-            </span>
-          </span>
+          <!-- bookmark item -->
+          <div v-if="!item.children" :key="item.id" class="px-2 py-1.5 flex justify-center items-start gap-1 text-blue-400 opacity-70 select-none">
+            <!-- <img v-if="item.url" :src="useGetFaviconURL(item.url)" alt="bookmark icon" class="shrink-0 w-4 h-4"> -->
+            <Iconify icon="ph:planet-fill" class="shrink-0 w-4 h-4"></Iconify>
+            <span class="text-xs line-camp-1">{{ item.title }}</span>
+          </div>
+          <!-- sub-folder item -->
           <button v-if="item.children" :key="item.id"
-            class="group p-2 flex items-start gap-1 rounded hover:text-yellow-500 active:text-white hover:bg-yellow-50 active:bg-yellow-500 transition-colors duration-300"
+            class="group px-2 py-1.5 flex justify-center items-start gap-1 text-amber-400 active:text-white hover:bg-amber-50 active:bg-amber-500 rounded transition-colors duration-300"
             @click="addFolderNav(item.title, index)">
-            <IconCustom name="ph:folder-fill" class="shrink-0 w-5 h-5 text-yellow-400 group-active:text-white" />
-            <span class="text-sm break-all">
+            <Iconify :icon="item.children.length > 0 ? 'ph:folder-fill' : 'ph:folder'" class="shrink-0 w-4 h-4 group-active:text-white" />
+            <span class="text-xs font-bold break-all">
               {{ item.title }}
             </span>
           </button>
@@ -232,7 +224,7 @@ const folderNavScrollingHandler = () => {
   }
 }
 
-.tree-container {
+.nodes-container {
   &::-webkit-scrollbar {
     width: 10px;
     height: 10px;
@@ -245,6 +237,13 @@ const folderNavScrollingHandler = () => {
   &::-webkit-scrollbar-thumb:hover {
     background-color: #94a3b8;
   }
+}
+
+.line-camp-1 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
 }
 
 .line-camp-2 {

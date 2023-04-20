@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, computed } from 'vue';
+import { onMounted, ref, computed, watch } from 'vue';
 import { useCheckBookmarkState } from '@/composables/checkBookmarkState'
 import { useGetFaviconURL } from '@/composables/getFaviconURL'
 import { Icon as Iconify, loadIcon } from '@iconify/vue'
@@ -11,6 +11,35 @@ const bookmarkURL = ref('')
 const iconURL = ref('')
 // an object stand for node tree (with children property)
 const nodesTree = ref(null)
+// an object stand for the folder node
+const folderNodeId = computed(() => {
+  if(nodesTree.value) {
+    return nodesTree.value.id
+  } else {
+    return '0'
+  }
+})
+
+// folder nav path
+const folderPath = ref([])
+const getFolderPath = async (id) => {
+  console.log(id);
+  const resultForFolderNode = await chrome.bookmarks.get(id)
+  const folderNode = resultForFolderNode[0]
+  folderPath.value.unshift(folderNode)
+  if (folderNode.parentId) {
+    getFolderPath(folderNode.parentId)
+  }
+}
+
+onMounted(() => {
+  watch(folderNodeId, () => {
+    console.log(folderNodeId.value);
+    folderPath.value = []
+    getFolderPath(folderNodeId.value)
+  }, { immediate: true })
+})
+
 const sortedNodes = computed(() => {
   if(nodesTree.value) {
     nodesTree.value.children.sort((nodeA, nodeB) => {
@@ -27,11 +56,14 @@ const sortedNodes = computed(() => {
     return []
   }
 })
+
 // an object stand for the select folder
 // without children property
 const selectFolderNode = ref(null)
 
 onMounted(async () => {
+  const rootTree = await chrome.bookmarks.getTree()
+  console.log('root tree', rootTree);
   /**
    * current tab information and bookmark state
    */
@@ -116,7 +148,7 @@ const changeHeightHandler = (event) => {
       <section class=" focus-within:bg-gray-50">
         <p class="section-title text-gray-600">
           <Iconify icon="ph:text-aa-fill" class="section-title-icon"></Iconify>
-          <span class="text-base font-semibold">名称</span>
+          <span class="text-lg font-semibold">名称</span>
         </p>
         <div class="textarea-container border-gray-200 focus-within:border-gray-400">
           <textarea name="bookmark name" id="bookmark-name" class="text-gray-700 placeholder:text-gray-300" placeholder="请输入书签的名称" v-model="bookmarkTitle" @input="changeHeightHandler"></textarea>
@@ -125,7 +157,7 @@ const changeHeightHandler = (event) => {
       <section class="focus-within:bg-blue-50/50">
         <p class="section-title text-blue-500">
           <Iconify icon="ph:link-fill" class="section-title-icon"></Iconify>
-          <span class="text-base font-semibold">链接</span>
+          <span class="text-lg font-semibold">链接</span>
         </p>
         <div class="textarea-container border-blue-200 focus-within:border-blue-400">
           <textarea name="bookmark url" id="bookmark-url" class="text-blue-600 placeholder:text-blue-200" placeholder="请输入书签的链接地址" v-model="bookmarkURL" @input="changeHeightHandler"></textarea>
@@ -136,7 +168,7 @@ const changeHeightHandler = (event) => {
           <div class="flex justify-start items-center gap-4">
             <p class="section-title text-amber-400">
               <Iconify icon="ph:folder-notch-fill" class="section-title-icon"></Iconify>
-              <span class="text-base font-semibold">文件夹</span>
+              <span class="text-lg font-semibold">文件夹</span>
             </p>
             <button class="group px-2 py-1 rounded transition-colors duration-300" :class="selectFolderNode ? 'hover:bg-amber-400' : ''" :disabled="!selectFolderNode">
               <span v-if="selectFolderNode" class="text-amber-400 font-bold group-hover:text-white underline decoration-2 decoration-amber-400 underline-offset-4">{{ selectFolderNode.title }}</span>
@@ -147,8 +179,8 @@ const changeHeightHandler = (event) => {
             <Iconify icon="ph:magnifying-glass" class="w-4 h-4"></Iconify>
           </button>
         </div>
-        <div class="w-full max-h-[500px] p-2 border border-amber-200 rounded-md">
-          <FolderGrid :nodes="sortedNodes"></FolderGrid>
+        <div class="w-full max-h-[500px] bg-amber-50/25 rounded-md">
+          <FolderGrid :folder-path="folderPath" :nodes="sortedNodes"></FolderGrid>
         </div>
       </section>
     </main>
