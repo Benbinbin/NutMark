@@ -6,12 +6,15 @@ import { useGetFaviconURL } from '@/composables/getFaviconURL'
 const props = defineProps(['rootName', 'rootTree'])
 const emits = defineEmits(['set-tree'])
 
+// the folder has expanded or not
 const expand = ref(true)
 
+// the current folder after drive down
+const currentTree = ref([])
+// the default/begin value
+currentTree.value = props.rootTree
 /**
- *
- * folder nav items of the nav bar
- *
+ * folder nav
  */
 const folderNavArr = ref([
   {
@@ -19,11 +22,6 @@ const folderNavArr = ref([
     path: []
   }
 ])
-
-// this is the current folder after drive down
-const currentTree = ref([])
-// the default/begin value of current tree is the rootTree
-currentTree.value = props.rootTree
 
 // the folder nav path of current folder
 // folder nav path is a number array
@@ -147,7 +145,7 @@ const folderNavScrollingHandler = () => {
     :class="expand ? (currentTree.length <= 2 ? 'col-span-2 row-span-2' : (currentTree.length <= 4 ? 'col-span-2 row-span-3' : 'col-span-3 row-span-4')) : 'col-span-1 row-span-1'">
     <!-- collapse the folder -->
     <button v-show="!expand" :title="props.rootName"
-      class="px-2 py-1 flex justify-start items-start gap-1 text-amber-500 hover:bg-amber-100 rounded transition-colors duration-300" @click="expand = true">
+      class="px-2 py-1 flex justify-start items-start gap-1 text-amber-400 hover:bg-amber-50 rounded transition-colors duration-300" @click="expand = true">
       <Iconify :icon="props.rootTree.length > 0 ? 'ph:folder-fill' : 'ph:folder'" class="shrink-0 w-5 h-5" />
       <span class="text-sm font-bold break-all">{{ props.rootName }}</span>
     </button>
@@ -194,7 +192,7 @@ const folderNavScrollingHandler = () => {
       </div>
       <!-- children item of the folder -->
       <div
-        class="nodes-container grow p-2 flex flex-wrap justify-start items-start gap-2 overflow-y-auto bg-white  border border-amber-300 rounded-b-lg rounded-tr-lg shadow shadow-amber-100">
+        class="nodes-container grow p-2 flex flex-wrap justify-start items-start gap-2 overflow-y-auto bg-white border border-amber-300 rounded-b-lg rounded-tr-lg">
         <template v-for="(item, index) in currentTree">
           <!-- bookmark item -->
           <div v-if="!item.children" :key="item.id" class="px-2 py-1.5 flex justify-center items-start gap-1 text-blue-400 opacity-70 select-none">
