@@ -1,13 +1,14 @@
 <script setup>
-import { ref, computed, nextTick } from 'vue'
+import { ref, computed, nextTick, inject } from 'vue'
 import { Icon as Iconify } from '@iconify/vue'
 import { useGetFaviconURL } from '@/composables/getFaviconURL'
 
-const props = defineProps(['rootName', 'rootTree'])
-const emits = defineEmits(['set-tree'])
+const props = defineProps(['rootId', 'rootName', 'rootTree'])
+// const emits = defineEmits(['set-tree'])
 
 // the folder has expanded or not
-const expand = ref(props.rootTree.length>0)
+const expand = ref(false)
+// const expand = ref(props.rootTree.length>0)
 
 // the current folder after drive down
 const currentTree = ref([])
@@ -25,11 +26,14 @@ const sortedTree = computed(() => {
   })
   return currentTree.value
 })
+
 /**
  * folder nav
  */
+// #region folderNav
 const folderNavArr = ref([
   {
+    id: props.rootId,
     title: props.rootName,
     path: []
   }
@@ -51,6 +55,7 @@ const setFolderNavPath = (path) => {
 
   // the start folderNavArr just contain the root folder
   const folderNavArrTemp = [{
+    id: props.rootId,
     title: props.rootName,
     path: []
   }]
@@ -62,6 +67,7 @@ const setFolderNavPath = (path) => {
     path.forEach((index) => {
       folderNavPathTemp = folderNavPathTemp.concat(index)
       folderNavArrTemp.unshift({
+        id: treeTemp[index].id,
         title: treeTemp[index].title,
         path: folderNavPathTemp
       })
@@ -79,10 +85,11 @@ const setFolderNavPath = (path) => {
 
 // click the children folder
 // set the folder nav items of the nav bar
-const addFolderNav = (title, index) => {
+const addFolderNav = (id, title, index) => {
   folderNavPath = folderNavPath.concat(index)
 
   folderNavArr.value.unshift({
+    id,
     title,
     path: folderNavPath
   })
@@ -94,16 +101,16 @@ const addFolderNav = (title, index) => {
   })
 }
 
-const setTreeHandler = () => {
-  const path = [...folderNavPath]
-  emits('set-tree', path, 'drill-down')
-}
+// const setTreeHandler = () => {
+//   const path = [...folderNavPath]
+//   emits('set-tree', path, 'drill-down')
+// }
+// #endregion
 
 /**
- *
  * scroll the folder nav
- *
  */
+// #region scroll
 const showScrollBtn = ref(false)
 
 const scrollPos = ref('start')
@@ -151,24 +158,41 @@ const folderNavScrollingHandler = () => {
     }
   }
 }
+// #endregion
+
+/**
+ * node tree
+ */
+const setNodeTreeId = inject('setNodeTreeId')
+
+/**
+ * select folder node
+ */
+const selectFolderNodeId = inject('selectFolderNodeId')
+const setSelectFolderId = inject('setSelectFolderId')
 </script>
 <template>
   <div class="self-stretch w-full max-h-full"
     :class="expand ? (currentTree.length <= 2 ? 'col-span-2 row-span-2' : (currentTree.length <= 4 ? 'col-span-2 row-span-2' : (currentTree.length <= 12 ? 'col-span-2 row-span-3' : 'col-span-2 row-span-4'))) : 'col-span-1 row-span-1'">
     <!-- collapse the folder -->
-    <button v-show="!expand" :title="props.rootName"
-      class="px-2 py-1 flex justify-start items-start gap-1 text-amber-400 hover:bg-amber-50 rounded transition-colors duration-300" @click="expand = true">
-      <Iconify :icon="props.rootTree.length > 0 ? 'ph:folder-fill' : 'ph:folder'" class="shrink-0 w-5 h-5" />
-      <span class="text-sm font-bold break-all">{{ props.rootName }}</span>
-    </button>
+    <div v-show="!expand" :title="props.rootName"
+      class="flex justify-start items-start"
+      :class="selectFolderNodeId === props.rootId ? 'text-green-400' : 'text-amber-400'">
+      <button class="shrink-0 pl-1 pr-0.5 py-1 hover:text-amber-400 hover:bg-amber-50 rounded transition-colors duration-300" @click="expand = true">
+        <Iconify :icon="props.rootTree.length > 0 ? 'ph:folder-fill' : 'ph:folder'" class="w-5 h-5" />
+      </button>
+      <button class="pl-0.5 pr-1 py-1 text-sm font-bold hover:text-green-400 hover:bg-green-50 break-all rounded transition-colors duration-300" @click="setSelectFolderId(props.rootId)">{{ props.rootName }}</button>
+    </div>
     <!-- expand the folder -->
     <div v-show="expand" class="w-full h-full flex flex-col">
       <!-- a nav bar -->
       <div class="shrink-0 w-full flex justify-between items-center">
         <!-- current folder node, the first item of folder nav -->
         <button
-          class="shrink-0 group w-fit p-2 flex justify-center items-center gap-1 relative z-10 text-xs font-bold text-amber-400 hover:text-amber-500 active:text-white bg-gradient-to-b from-amber-50 from-10% to-white active:bg-amber-500 border-t border-x border-amber-300 rounded-t transition-colors duration-300 translate-y-px"
-          @click="setTreeHandler">
+          :key="folderNavArr[0].id"
+          class="shrink-0 group w-fit p-2 flex justify-center items-center gap-1 relative z-10 text-xs font-bold active:text-white bg-gradient-to-b from-10% to-white border-t border-x rounded-t transition-colors duration-300 translate-y-px"
+          :class="selectFolderNodeId===folderNavArr[0].id ? 'text-green-400 hover:text-green-500 from-green-50 active:bg-green-500 border-green-300 ' : 'text-amber-400 hover:text-amber-500 from-amber-50 active:bg-amber-500 border-amber-300 '"
+          @click="setNodeTreeId(folderNavArr[0].id)">
           <Iconify :icon="currentTree.length ? 'ph:folder-open-fill' : 'ph:folder-open'" class="shrink-0 w-4 h-4 group-active:text-white" />
           <span>{{ folderNavArr[0].title }}</span>
         </button>
@@ -177,8 +201,9 @@ const folderNavScrollingHandler = () => {
           class="folder-nav-container grow flex justify-start items-center overflow-x-auto -translate-x-1 translate-y-px scroll-smooth"
           @scroll.passive="folderNavScrollingHandler">
           <button v-for="(folder, index) in folderNavArr.slice(1)"
-            :key="folder.path.length > 0 ? folder.path.join() : 'root'"
-            class="shrink-0 p-2 relative border-t border-r border-amber-300 text-xs font-bold text-amber-400 hover:text-amber-500 hover:bg-amber-100 rounded-tr transition-colors duration-300"
+            :key="folder.id"
+            class="shrink-0 p-2 relative text-xs font-bold border-t border-r rounded-tr transition-colors duration-300"
+            :class="selectFolderNodeId === folder.id ? 'hover:text-green-500 hover:bg-green-100 border-green-300 text-green-400' : 'hover:text-amber-500 hover:bg-amber-100 border-amber-300 text-amber-400'"
             :style="`transform: translateX(-${(index * 2)}px)`" @click="setFolderNavPath(folder.path)">
             {{ folder.title }}
           </button>
@@ -186,12 +211,12 @@ const folderNavScrollingHandler = () => {
         <!-- scroll control buttons -->
         <div class="shrink-0 pl-2 flex items-center gap-0.5">
           <button v-show="showScrollBtn" :disabled="scrollPos === 'start'"
-            class="p-1 hidden sm:flex items-center text-green-500 active:text-white bg-green-100 hover:bg-green-200 active:bg-green-500 rounded-full transition-colors duration-300"
+            class="p-1 hidden sm:flex items-center text-gray-500 active:text-white bg-gray-100 hover:bg-gray-200 active:bg-gray-500 rounded-full transition-colors duration-300"
             :class="scrollPos === 'start' ? 'opacity-30' : ''" @click="scrollFolderNavHandler('left')">
             <Iconify icon="ic:round-keyboard-arrow-left" class="w-3.5 h-3.5" />
           </button>
           <button v-show="showScrollBtn" :disabled="scrollPos === 'end'"
-            class="p-1 hidden sm:flex items-center text-green-500 active:text-white bg-green-100 hover:bg-green-200 active:bg-green-500 rounded-full transition-colors duration-300"
+            class="p-1 hidden sm:flex items-center text-gray-500 active:text-white bg-gray-100 hover:bg-gray-200 active:bg-gray-500 rounded-full transition-colors duration-300"
             :class="scrollPos === 'end' ? 'opacity-30' : ''" @click="scrollFolderNavHandler('right')">
             <Iconify icon="ic:round-keyboard-arrow-right" class="w-3.5 h-3.5" />
           </button>
@@ -203,25 +228,30 @@ const folderNavScrollingHandler = () => {
         </div>
       </div>
       <div
-      class="nodes-container grow p-2 overflow-y-auto bg-white border border-amber-300 rounded-b rounded-tr">
-        <div class="flex flex-wrap justify-start items-start gap-1 ">
+      class="nodes-container grow p-2 overflow-y-auto bg-white border rounded-b rounded-tr"
+      :class="selectFolderNodeId === folderNavArr[0].id ? 'border-green-300 ' : 'border-amber-300 '">
+        <div class="flex flex-wrap justify-start items-start gap-1">
           <!-- children item of the folder -->
           <template v-for="(item, index) in sortedTree">
             <!-- bookmark item -->
-            <div v-if="!item.children" :key="item.id" class="px-2 py-1.5 flex justify-center items-start gap-1 text-blue-400 opacity-70 select-none">
+            <div v-if="!item.children" :key="item.id" class="p-1.5 flex justify-center items-start gap-1 text-blue-400 opacity-70 select-none">
               <!-- <img v-if="item.url" :src="useGetFaviconURL(item.url)" alt="bookmark icon" class="shrink-0 w-4 h-4"> -->
               <Iconify icon="ph:planet-fill" class="shrink-0 w-4 h-4"></Iconify>
               <span class="text-xs line-camp-1">{{ item.title }}</span>
             </div>
             <!-- sub-folder item -->
-            <button v-if="item.children" :key="item.id"
-              class="group px-2 py-1.5 flex justify-center items-start gap-1 text-amber-400 active:text-white hover:bg-amber-50 active:bg-amber-500 rounded transition-colors duration-300"
-              @click="addFolderNav(item.title, index)">
-              <Iconify :icon="item.children.length > 0 ? 'ph:folder-fill' : 'ph:folder'" class="shrink-0 w-4 h-4 group-active:text-white" />
-              <span class="text-xs font-bold break-all">
+            <div v-if="item.children" :key="item.id"
+              class="flex justify-center items-start"
+              :class="selectFolderNodeId === item.id ? 'text-green-400' : 'text-amber-400'">
+              <button class="pl-2 pr-0.5 py-1.5 hover:text-amber-400 hover:bg-amber-5 rounded transition-colors duration-300"
+              @click="addFolderNav(item.id, item.title, index)">
+                <Iconify :icon="item.children.length > 0 ? 'ph:folder-fill' : 'ph:folder'" class="shrink-0 w-4 h-4" />
+              </button>
+              <button class="pl-0.5 pr-2 py-1.5 text-xs font-bold hover:text-green-400 hover:bg-green-50 break-all rounded transition-colors duration-300"
+              @click="setSelectFolderId(item.id)">
                 {{ item.title }}
-              </span>
-            </button>
+              </button>
+            </div>
           </template>
         </div>
       </div>

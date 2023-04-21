@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, computed, watch } from 'vue';
+import { onMounted, ref, watch, provide } from 'vue';
 import { useCheckBookmarkState } from '@/composables/checkBookmarkState'
 import { useGetFaviconURL } from '@/composables/getFaviconURL'
 import { Icon as Iconify } from '@iconify/vue'
@@ -25,7 +25,33 @@ const changeHeightHandler = (event) => {
  * folder
  */
 // node tree (with children property)
+// root node is the default start point of node tree
+const nodeTreeId = ref('0')
+const setNodeTreeId = (id) => {
+  nodeTreeId.value = id
+}
+provide('setNodeTreeId', setNodeTreeId)
+
 const nodeTree = ref(null) // an object
+onMounted(() => {
+  // get the node tree object
+  watch(nodeTreeId, async () => {
+    const result = await chrome.bookmarks.getSubTree(nodeTreeId.value)
+    const targetNodeTree = result[0]
+    // sort the nodeTree children nodes
+    // move the folder node to top
+    targetNodeTree.children.sort((nodeA, nodeB) => {
+      if (nodeA.children && !nodeB.children) {
+        return -1
+      } else if (!nodeA.children && nodeB.children) {
+        return 1
+      } else {
+        return 0
+      }
+    })
+    nodeTree.value = targetNodeTree
+  }, {immediate: true})
+})
 
 // folder path
 const folderPath = ref([])
@@ -37,47 +63,40 @@ const getFolderPath = async (id) => {
     getFolderPath(folderNode.parentId)
   }
 }
-// update the folder path when the nodeTree change
 onMounted(() => {
-  watch(nodeTree, () => {
+  // update the folder path when the nodeTree change
+  watch(nodeTreeId, () => {
     // reset folder path
     folderPath.value = []
-    if(nodeTree.value) {
-      getFolderPath(nodeTree.value.id)
-    } else {
-      getFolderPath('0')
-    }
+      getFolderPath(nodeTreeId.value)
   }, { immediate: true })
-})
-// sort the nodeTree children nodes
-// move the folder node to top
-const sortedNodes = computed(() => {
-  if(nodeTree.value) {
-    nodeTree.value.children.sort((nodeA, nodeB) => {
-      if (nodeA.children && !nodeB.children) {
-        return -1
-      } else if (!nodeA.children && nodeB.children) {
-        return 1
-      } else {
-        return 0
-      }
-    })
-    return nodeTree.value.children
-  } else {
-    return []
-  }
 })
 
 // the folder node selected (without children property)
-const selectFolderNode = ref(null) // an object
-const setSelectFolderNode = (node) => {
-  selectFolderNode.value = node
+// 「书签栏」 is the default selected folder id
+const selectFolderNodeId = ref('1')
+const setSelectFolderId = (id) => {
+  selectFolderNodeId.value = id
 }
+provide('selectFolderNodeId', selectFolderNodeId)
+provide('setSelectFolderId', setSelectFolderId)
+
+const selectFolderNode = ref(null) // an object
+onMounted(() => {
+  // get the node tree object
+  watch(selectFolderNodeId, async () => {
+    const result = await chrome.bookmarks.get(selectFolderNodeId.value)
+    selectFolderNode.value = result[0]
+
+  }, { immediate: true })
+})
 
 /**
  * get init information
  */
-const getFolderAndTree = async (bookmarkNode) => {
+// get the folder and node tree id of the given bookmark node
+// with fallback solution to the root node and 「书签栏」
+const getFolderIdAndTreeId = async (bookmarkNode) => {
   // get the folder for this bookmark node
   const resultForFolderNode = await chrome.bookmarks.get(bookmarkNode.parentId)
   const folderNode = resultForFolderNode[0]
@@ -86,30 +105,25 @@ const getFolderAndTree = async (bookmarkNode) => {
   let targetId;
   if (folderNode.parentId) {
     // if the folder node has parent folder
-    // get the node tree based on the parent folder
-    // console.log('get node tree');
     targetId = folderNode.parentId
   } else {
     // if the folder node doesn't have parent folder
     // (when the folder is the root folder)
-    // then set the node tree based on the this folder
+    // then set the node tree id as this folder
     targetId = folderNode.id
   }
-  const resultForNodeTree = await chrome.bookmarks.getSubTree(targetId)
-  const nodeTree = resultForNodeTree[0]
 
   return {
-    folder: folderNode,
-    tree: nodeTree
+    folderId: bookmarkNode.parentId,
+    treeId: targetId
   }
 }
+
 // init the state
 onMounted(async () => {
   // const rootTree = await chrome.bookmarks.getTree()
   // console.log('root tree', rootTree);
-  /**
-   * get current tab information and bookmark state
-   */
+
   // get current tab
   const [tab] = await chrome.tabs.query({
     active: true,
@@ -125,11 +139,12 @@ onMounted(async () => {
     const resultForBookmarkNode = await chrome.bookmarks.search({
       url: bookmarkURL.value
     });
+    // get the bookmark node
     const bookmarkNode = resultForBookmarkNode[0]
     // set the selected folder and node tree
-    const result = await getFolderAndTree(bookmarkNode)
-    selectFolderNode.value = result.folder
-    nodeTree.value = result.tree
+    const result = await getFolderIdAndTreeId(bookmarkNode)
+    selectFolderNodeId.value = result.folderId
+    nodeTreeId.value = result.treeId
   } else {
     // if the url doesn't bookmark
     // get recent bookmark to build node tree
@@ -139,19 +154,17 @@ onMounted(async () => {
     if(recentBookmarkArr.length > 0) {
       // if there is a bookmark created recently
       const recentBookmark = recentBookmarkArr[0]
-      const result = await getFolderAndTree(recentBookmark)
-      selectFolderNode.value = result.folder
-      nodeTree.value = result.tree
+      const result = await getFolderIdAndTreeId(recentBookmark)
+      selectFolderNodeId.value = result.folderId
+      nodeTreeId.value = result.treeId
     } else {
       // if there isn't any bookmarks created recently
       // (when this is a brand new browser)
       // set the node tree based on the root node
-      const resultForNodeTree = await chrome.bookmarks.getSubTree('0')
-      nodeTree.value = resultForNodeTree[0]
+      nodeTreeId.value = '0'
       // and set the selected folder as the first children node
       // 根目录下的第一个子文件夹一般就是「书签栏」
-      const resultForSelectFolderNode = await chrome.bookmarks.get(nodeTree.value.children[0].id)
-      selectFolderNode.value = resultForSelectFolderNode[0]
+      selectFolderNodeId.value = '1'
     }
   }
   // console.log('select folder node', selectFolderNode.value);
@@ -164,7 +177,7 @@ onMounted(async () => {
     <header class="px-4 py-2.5 flex justify-between sticky top-0 inset-x-0 bg-gray-50 border-b shadow">
       <div class="flex justify-center items-center gap-2">
         <!-- <img v-if="bookmarkURL" :src="useGetFaviconURL(bookmarkURL)" alt="bookmark icon" class="w-6 h-6"> -->
-        <Iconify icon="ph:planet-fill" class="inline-block w-6 h-6 text-purple-500"></Iconify>
+        <Iconify icon="ph:planet-fill" class="inline-block w-6 h-6 text-green-500"></Iconify>
       </div>
       <div class="flex justify-center items-center gap-2">
         <button class="group px-2 py-1 flex justify-center items-center gap-1 text-xs font-bold hover:text-white bg-transparent border-2 rounded transition-colors duration-300" :class="bookmarkState ? 'text-amber-500 hover:bg-red-500 border-amber-500 hover:border-red-500' : 'text-emerald-500 hover:bg-emerald-500 border-emerald-500'">
@@ -202,9 +215,10 @@ onMounted(async () => {
               <Iconify icon="ph:folder-notch-fill" class="section-title-icon"></Iconify>
               <span class="text-base font-semibold">文件夹</span>
             </p>
-            <button class="group px-2 py-1 rounded transition-colors duration-300" :class="selectFolderNode ? 'hover:bg-amber-400' : ''" :disabled="!selectFolderNode">
-              <span v-if="selectFolderNode" class="text-amber-400 font-bold group-hover:text-white underline decoration-wavy decoration-2 decoration-amber-400 underline-offset-2">{{ selectFolderNode.title }}</span>
-              <span v-else class="text-xs font-bold text-amber-300 underline decoration-2 decoration-amber-300 underline-offset-2">请选择文件夹 👇</span>
+            <button class="group px-2 py-1.5 rounded transition-colors duration-300" :class="selectFolderNode ? 'bg-green-200/80 hover:bg-green-500' : ''" :disabled="!selectFolderNode"
+            @click="setNodeTreeId(selectFolderNode.parentId)">
+              <span v-if="selectFolderNode" class="text-xs font-bold text-green-500 group-hover:text-white">{{ selectFolderNode.title }}</span>
+              <span v-else class="text-xs font-bold text-green-300 underline decoration-wavy decoration-2 decoration-green-300 underline-offset-2">请选择文件夹 👇</span>
             </button>
           </div>
           <button class="p-1.5 text-amber-400 hover:text-white hover:bg-amber-400 rounded transition-colors duration-300">
@@ -212,7 +226,7 @@ onMounted(async () => {
           </button>
         </div>
         <div class="w-full max-h-[500px] rounded-md shadow shadow-amber-100">
-          <FolderGrid :folder-path="folderPath" :nodes="sortedNodes"></FolderGrid>
+          <FolderGrid v-if="nodeTree" :folder-path="folderPath" :nodes="nodeTree.children"></FolderGrid>
         </div>
       </section>
     </main>

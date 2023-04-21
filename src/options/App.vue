@@ -4,7 +4,7 @@
 
 <template>
   <div>
-    <h1 class="p-8 text-xl font-bold text-purple-500">
+    <h1 class="p-8 text-xl font-bold text-green-500">
       Options Page
     </h1>
   </div>
