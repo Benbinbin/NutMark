@@ -176,8 +176,8 @@ onMounted(async () => {
   <div>
     <header class="px-4 py-2.5 flex justify-between sticky top-0 inset-x-0 bg-gray-50 border-b shadow">
       <div class="flex justify-center items-center gap-2">
-        <!-- <img v-if="bookmarkURL" :src="useGetFaviconURL(bookmarkURL)" alt="bookmark icon" class="w-6 h-6"> -->
-        <Iconify icon="ph:planet-fill" class="inline-block w-6 h-6 text-green-500"></Iconify>
+        <img v-if="bookmarkURL" :src="useGetFaviconURL(bookmarkURL)" alt="bookmark icon" class="w-6 h-6">
+        <Iconify v-else icon="ph:planet-fill" class="inline-block w-6 h-6 text-green-500"></Iconify>
       </div>
       <div class="flex justify-center items-center gap-2">
         <button class="group px-2 py-1 flex justify-center items-center gap-1 text-xs font-bold hover:text-white bg-transparent border-2 rounded transition-colors duration-300" :class="bookmarkState ? 'text-amber-500 hover:bg-red-500 border-amber-500 hover:border-red-500' : 'text-emerald-500 hover:bg-emerald-500 border-emerald-500'">
@@ -189,7 +189,7 @@ onMounted(async () => {
         </button>
       </div>
     </header>
-    <main class="p-4 space-y-2">
+    <main class="px-4 space-y-2">
       <section class=" focus-within:bg-gray-50">
         <p class="section-title text-gray-500">
           <Iconify icon="ph:text-aa-fill" class="section-title-icon"></Iconify>
@@ -211,7 +211,7 @@ onMounted(async () => {
       <section>
         <div class="flex justify-between items-center">
           <div class="flex justify-start items-center gap-4">
-            <p class="section-title text-amber-300">
+            <p class="section-title text-orange-300">
               <Iconify icon="ph:folder-notch-fill" class="section-title-icon"></Iconify>
               <span class="text-base font-semibold">文件夹</span>
             </p>
@@ -221,11 +221,11 @@ onMounted(async () => {
               <span v-else class="text-xs font-bold text-green-300 underline decoration-wavy decoration-2 decoration-green-300 underline-offset-2">请选择文件夹 👇</span>
             </button>
           </div>
-          <button class="p-1.5 text-amber-400 hover:text-white hover:bg-amber-400 rounded transition-colors duration-300">
+          <button class="p-1.5 text-orange-400 hover:text-white hover:bg-orange-400 rounded transition-colors duration-300">
             <Iconify icon="ph:magnifying-glass" class="w-4 h-4"></Iconify>
           </button>
         </div>
-        <div class="w-full max-h-[500px] rounded-md shadow shadow-amber-100">
+        <div class="w-full rounded-md shadow shadow-orange-100">
           <FolderGrid v-if="nodeTree" :folder-path="folderPath" :nodes="nodeTree.children"></FolderGrid>
         </div>
       </section>
