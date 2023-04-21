@@ -72,12 +72,15 @@ onMounted(() => {
   }, { immediate: true })
 })
 
-// the folder node selected (without children property)
+// the folder node selected (an object without children property)
+const selectFolderType = ref('old')
 // 「书签栏」 is the default selected folder id
 const selectFolderNodeId = ref('1')
 const setSelectFolderId = (id) => {
   selectFolderNodeId.value = id
+  selectFolderType.value = 'old'
 }
+provide('selectFolderType', selectFolderType)
 provide('selectFolderNodeId', selectFolderNodeId)
 provide('setSelectFolderId', setSelectFolderId)
 
@@ -90,6 +93,15 @@ onMounted(() => {
 
   }, { immediate: true })
 })
+
+// new folder
+const newFolder = ref(null)
+const setNewFolder = (newFolderObj) => {
+  newFolder.value = newFolderObj
+  selectFolderType.value = 'new'
+}
+provide('newFolder', newFolder)
+provide('setNewFolder', setNewFolder)
 
 /**
  * get init information
@@ -215,11 +227,15 @@ onMounted(async () => {
               <Iconify icon="ph:folder-notch-fill" class="section-title-icon"></Iconify>
               <span class="text-base font-semibold">文件夹</span>
             </p>
-            <button class="group px-2 py-1.5 rounded transition-colors duration-300" :class="selectFolderNode ? 'bg-green-200/80 hover:bg-green-500' : ''" :disabled="!selectFolderNode"
+            <button v-if="selectFolderType !== 'new'" class="px-2 py-1.5 text-xs font-bold rounded transition-colors duration-300" :class="selectFolderNode ? 'text-green-500 hover:text-white bg-green-200/60 hover:bg-green-500' : 'text-green-300'" :disabled="!selectFolderNode"
             @click="setNodeTreeId(selectFolderNode.parentId)">
-              <span v-if="selectFolderNode" class="text-xs font-bold text-green-500 group-hover:text-white">{{ selectFolderNode.title }}</span>
-              <span v-else class="text-xs font-bold text-green-300 underline decoration-wavy decoration-2 decoration-green-300 underline-offset-2">请选择文件夹 👇</span>
+              <span v-if="selectFolderNode">{{ selectFolderNode.title }}</span>
+              <span v-else class="underline decoration-wavy decoration-2 decoration-green-300 underline-offset-2">请选择文件夹 👇</span>
             </button>
+            <div v-if="newFolder && selectFolderType==='new'" class="group relative">
+              <button class="px-2 py-1.5 text-xs font-bold text-purple-500 hover:text-white bg-purple-200/60 hover:bg-purple-500 rounded transition-colors duration-300" @click="setNodeTreeId(newFolder.parentId)">{{ newFolder.title || '未命名文件夹' }}</button>
+              <sup class="px-1.5 py-0.5 group-hover:hidden absolute -top-3 -right-4 rotate-45 text-xs text-white bg-orange-400 rounded-full select-none">new</sup>
+            </div>
           </div>
           <button class="p-1.5 text-orange-400 hover:text-white hover:bg-orange-400 rounded transition-colors duration-300">
             <Iconify icon="ph:magnifying-glass" class="w-4 h-4"></Iconify>

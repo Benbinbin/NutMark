@@ -16,7 +16,7 @@ const selectFolderNodeId = inject('selectFolderNodeId')
       <div v-for="(folder, index) in folderPath" :key="folder.id" class="flex justify-center items-center gap-1 text-orange-500">
         <button class="px-2 py-1 text-xs font-bold rounded transition-colors duration-300"
         :class="selectFolderNodeId === folder.id ? 'text-green-500 hover:bg-green-100 ' : 'text-orange-500 hover:bg-orange-100 '"
-        @click="setNodeTreeId(folder.id)">{{ folder.id === '0' ? '根目录' : (folder.title || '未命名') }}</button>
+        @click="setNodeTreeId(folder.id)">{{ folder.id === '0' ? '根目录' : (folder.title || '未命名文件夹') }}</button>
         <span v-if="index < folderPath.length -1">/</span>
       </div>
     </div>
@@ -27,7 +27,7 @@ const selectFolderNodeId = inject('selectFolderNodeId')
         <div v-if="!node.children" :key="node.id" class="p-1 flex justify-center items-center gap-1 text-blue-400 select-none">
           <img v-if="node.url" :src="useGetFaviconURL(node.url)" alt="bookmark icon" class="shrink-0 w-4 h-4">
           <Iconify v-else icon="ph:planet-fill" class="shrink-0 w-5 h-5"></Iconify>
-          <span class="line-camp-1 text-xs">{{ node.title }}</span>
+          <span class="line-camp-1 text-xs">{{ node.title || '未命名书签' }}</span>
         </div>
         <!-- the folder node -->
         <FolderGridItem v-if="node.children" :key="node.id" :root-id="node.id" :root-name="node.title" :root-tree="node.children"></FolderGridItem>
