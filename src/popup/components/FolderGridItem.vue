@@ -1,5 +1,5 @@
 <script setup>
-import { ref, nextTick } from 'vue'
+import { ref, computed, nextTick } from 'vue'
 import { Icon as Iconify } from '@iconify/vue'
 import { useGetFaviconURL } from '@/composables/getFaviconURL'
 
@@ -7,12 +7,24 @@ const props = defineProps(['rootName', 'rootTree'])
 const emits = defineEmits(['set-tree'])
 
 // the folder has expanded or not
-const expand = ref(true)
+const expand = ref(props.rootTree.length>0)
 
 // the current folder after drive down
 const currentTree = ref([])
 // the default/begin value
 currentTree.value = props.rootTree
+const sortedTree = computed(() => {
+  currentTree.value.sort((nodeA, nodeB) => {
+    if (nodeA.children && !nodeB.children) {
+      return -1
+    } else if (!nodeA.children && nodeB.children) {
+      return 1
+    } else {
+      return 0
+    }
+  })
+  return currentTree.value
+})
 /**
  * folder nav
  */
@@ -142,7 +154,7 @@ const folderNavScrollingHandler = () => {
 </script>
 <template>
   <div class="self-stretch w-full max-h-full"
-    :class="expand ? (currentTree.length <= 2 ? 'col-span-2 row-span-2' : (currentTree.length <= 4 ? 'col-span-2 row-span-3' : 'col-span-3 row-span-4')) : 'col-span-1 row-span-1'">
+    :class="expand ? (currentTree.length <= 2 ? 'col-span-2 row-span-2' : (currentTree.length <= 4 ? 'col-span-2 row-span-2' : (currentTree.length <= 12 ? 'col-span-2 row-span-3' : 'col-span-2 row-span-4'))) : 'col-span-1 row-span-1'">
     <!-- collapse the folder -->
     <button v-show="!expand" :title="props.rootName"
       class="px-2 py-1 flex justify-start items-start gap-1 text-amber-400 hover:bg-amber-50 rounded transition-colors duration-300" @click="expand = true">
@@ -155,7 +167,7 @@ const folderNavScrollingHandler = () => {
       <div class="shrink-0 w-full flex justify-between items-center">
         <!-- current folder node, the first item of folder nav -->
         <button
-          class="shrink-0 group w-fit p-2 flex justify-center items-center gap-1 relative z-10 text-xs font-bold text-amber-400 hover:text-amber-500 active:text-white bg-white hover:bg-amber-100 active:bg-amber-500 border-t border-x border-amber-300 rounded-t transition-colors duration-300 translate-y-px"
+          class="shrink-0 group w-fit p-2 flex justify-center items-center gap-1 relative z-10 text-xs font-bold text-amber-400 hover:text-amber-500 active:text-white bg-gradient-to-b from-amber-50 from-10% to-white active:bg-amber-500 border-t border-x border-amber-300 rounded-t transition-colors duration-300 translate-y-px"
           @click="setTreeHandler">
           <Iconify :icon="currentTree.length ? 'ph:folder-open-fill' : 'ph:folder-open'" class="shrink-0 w-4 h-4 group-active:text-white" />
           <span>{{ folderNavArr[0].title }}</span>
@@ -190,26 +202,28 @@ const folderNavScrollingHandler = () => {
           </button>
         </div>
       </div>
-      <!-- children item of the folder -->
       <div
-        class="nodes-container grow p-2 flex flex-wrap justify-start items-start gap-2 overflow-y-auto bg-white border border-amber-300 rounded-b-lg rounded-tr-lg">
-        <template v-for="(item, index) in currentTree">
-          <!-- bookmark item -->
-          <div v-if="!item.children" :key="item.id" class="px-2 py-1.5 flex justify-center items-start gap-1 text-blue-400 opacity-70 select-none">
-            <!-- <img v-if="item.url" :src="useGetFaviconURL(item.url)" alt="bookmark icon" class="shrink-0 w-4 h-4"> -->
-            <Iconify icon="ph:planet-fill" class="shrink-0 w-4 h-4"></Iconify>
-            <span class="text-xs line-camp-1">{{ item.title }}</span>
-          </div>
-          <!-- sub-folder item -->
-          <button v-if="item.children" :key="item.id"
-            class="group px-2 py-1.5 flex justify-center items-start gap-1 text-amber-400 active:text-white hover:bg-amber-50 active:bg-amber-500 rounded transition-colors duration-300"
-            @click="addFolderNav(item.title, index)">
-            <Iconify :icon="item.children.length > 0 ? 'ph:folder-fill' : 'ph:folder'" class="shrink-0 w-4 h-4 group-active:text-white" />
-            <span class="text-xs font-bold break-all">
-              {{ item.title }}
-            </span>
-          </button>
-        </template>
+      class="nodes-container grow p-2 overflow-y-auto bg-white border border-amber-300 rounded-b rounded-tr">
+        <div class="flex flex-wrap justify-start items-start gap-1 ">
+          <!-- children item of the folder -->
+          <template v-for="(item, index) in sortedTree">
+            <!-- bookmark item -->
+            <div v-if="!item.children" :key="item.id" class="px-2 py-1.5 flex justify-center items-start gap-1 text-blue-400 opacity-70 select-none">
+              <!-- <img v-if="item.url" :src="useGetFaviconURL(item.url)" alt="bookmark icon" class="shrink-0 w-4 h-4"> -->
+              <Iconify icon="ph:planet-fill" class="shrink-0 w-4 h-4"></Iconify>
+              <span class="text-xs line-camp-1">{{ item.title }}</span>
+            </div>
+            <!-- sub-folder item -->
+            <button v-if="item.children" :key="item.id"
+              class="group px-2 py-1.5 flex justify-center items-start gap-1 text-amber-400 active:text-white hover:bg-amber-50 active:bg-amber-500 rounded transition-colors duration-300"
+              @click="addFolderNav(item.title, index)">
+              <Iconify :icon="item.children.length > 0 ? 'ph:folder-fill' : 'ph:folder'" class="shrink-0 w-4 h-4 group-active:text-white" />
+              <span class="text-xs font-bold break-all">
+                {{ item.title }}
+              </span>
+            </button>
+          </template>
+        </div>
       </div>
     </div>
   </div>
@@ -224,16 +238,18 @@ const folderNavScrollingHandler = () => {
 
 .nodes-container {
   &::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    border-radius: 2px;
   }
 
   &::-webkit-scrollbar-thumb {
-    background-color: #cbd5e1;
+    background-color: #fef3c7;
   }
 
   &::-webkit-scrollbar-thumb:hover {
-    background-color: #94a3b8;
+    background-color: #fde68a;
   }
 }
 

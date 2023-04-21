@@ -13,15 +13,23 @@ const bookmarkTitle = ref('')
 const bookmarkURL = ref('')
 
 /**
+ * textarea
+ */
+// change textarea input box height
+const changeHeightHandler = (event) => {
+  event.target.style.height = 'auto'
+  event.target.style.height = `${event.target.scrollHeight}px`
+}
+
+/**
  * folder
  */
 // node tree (with children property)
 const nodeTree = ref(null) // an object
 
-// folder path for folder nav
+// folder path
 const folderPath = ref([])
 const getFolderPath = async (id) => {
-  // console.log(id);
   const resultForFolderNode = await chrome.bookmarks.get(id)
   const folderNode = resultForFolderNode[0]
   folderPath.value.unshift(folderNode)
@@ -29,7 +37,7 @@ const getFolderPath = async (id) => {
     getFolderPath(folderNode.parentId)
   }
 }
-
+// update the folder path when the nodeTree change
 onMounted(() => {
   watch(nodeTree, () => {
     // reset folder path
@@ -41,7 +49,8 @@ onMounted(() => {
     }
   }, { immediate: true })
 })
-
+// sort the nodeTree children nodes
+// move the folder node to top
 const sortedNodes = computed(() => {
   if(nodeTree.value) {
     nodeTree.value.children.sort((nodeA, nodeB) => {
@@ -59,10 +68,41 @@ const sortedNodes = computed(() => {
   }
 })
 
-// the folder node selected
-// without children property
+// the folder node selected (without children property)
 const selectFolderNode = ref(null) // an object
+const setSelectFolderNode = (node) => {
+  selectFolderNode.value = node
+}
 
+/**
+ * get init information
+ */
+const getFolderAndTree = async (bookmarkNode) => {
+  // get the folder for this bookmark node
+  const resultForFolderNode = await chrome.bookmarks.get(bookmarkNode.parentId)
+  const folderNode = resultForFolderNode[0]
+
+  // get the node tree
+  let targetId;
+  if (folderNode.parentId) {
+    // if the folder node has parent folder
+    // get the node tree based on the parent folder
+    // console.log('get node tree');
+    targetId = folderNode.parentId
+  } else {
+    // if the folder node doesn't have parent folder
+    // (when the folder is the root folder)
+    // then set the node tree based on the this folder
+    targetId = folderNode.id
+  }
+  const resultForNodeTree = await chrome.bookmarks.getSubTree(targetId)
+  const nodeTree = resultForNodeTree[0]
+
+  return {
+    folder: folderNode,
+    tree: nodeTree
+  }
+}
 // init the state
 onMounted(async () => {
   // const rootTree = await chrome.bookmarks.getTree()
@@ -80,54 +120,43 @@ onMounted(async () => {
   bookmarkURL.value = tab.url || tab.pendingUrl;
   bookmarkState.value = await useCheckBookmarkState(bookmarkURL.value);
 
-  /**
-   * get recent bookmark to build node tree
-   */
-  const recentBookmarkArr = await chrome.bookmarks.getRecent(1)
-  // console.log('get recent bookmarks', recentBookmarkArr);
-
-  if(recentBookmarkArr.length > 0) {
-    // if there is a bookmark created recently
-    const recentBookmark = recentBookmarkArr[0]
-    // get the folder node of this bookmark
-    const resultForSelectFolderNode = await chrome.bookmarks.get(recentBookmark.parentId)
-    // set the selected folder as this folder
-    selectFolderNode.value = resultForSelectFolderNode[0]
-    // set the node tree
-    if(selectFolderNode.value.parentId) {
-      // if the selected folder has parent folder
-      // get the node tree based on the parent folder
-      // console.log('get node tree');
-      const resultForNodeTree = (await chrome.bookmarks.getSubTree(selectFolderNode.value.parentId))
-      nodeTree.value = resultForNodeTree[0]
-    } else {
-      // if the selected folder doesn't have parent folder
-      // (when the selected folder is the root folder)
-      // then set the node tree based on the selected folder
-      const resultForNodeTree = await chrome.bookmarks.getSubTree(recentBookmark.parentId)
-      nodeTree.value = resultForNodeTree[0]
-    }
+  if(bookmarkState.value) {
+    // if the url already bookmarked
+    const resultForBookmarkNode = await chrome.bookmarks.search({
+      url: bookmarkURL.value
+    });
+    const bookmarkNode = resultForBookmarkNode[0]
+    // set the selected folder and node tree
+    const result = await getFolderAndTree(bookmarkNode)
+    selectFolderNode.value = result.folder
+    nodeTree.value = result.tree
   } else {
-    // if there isn't any bookmarks created recently
-    // (when this is a brand new browser)
-    // set the node tree based on the root node
-    const resultForNodeTree = await chrome.bookmarks.getSubTree('0')
-    nodeTree.value = resultForNodeTree[0]
-    // and set the selected folder as the first children node
-    // 根目录下的第一个子文件夹一般就是「书签栏」
-    const resultForSelectFolderNode = await chrome.bookmarks.get(nodeTree.value.children[0].id)
-    selectFolderNode.value = resultForSelectFolderNode[0]
-  }
+    // if the url doesn't bookmark
+    // get recent bookmark to build node tree
+    const recentBookmarkArr = await chrome.bookmarks.getRecent(1)
+    // console.log('get recent bookmarks', recentBookmarkArr);
 
+    if(recentBookmarkArr.length > 0) {
+      // if there is a bookmark created recently
+      const recentBookmark = recentBookmarkArr[0]
+      const result = await getFolderAndTree(recentBookmark)
+      selectFolderNode.value = result.folder
+      nodeTree.value = result.tree
+    } else {
+      // if there isn't any bookmarks created recently
+      // (when this is a brand new browser)
+      // set the node tree based on the root node
+      const resultForNodeTree = await chrome.bookmarks.getSubTree('0')
+      nodeTree.value = resultForNodeTree[0]
+      // and set the selected folder as the first children node
+      // 根目录下的第一个子文件夹一般就是「书签栏」
+      const resultForSelectFolderNode = await chrome.bookmarks.get(nodeTree.value.children[0].id)
+      selectFolderNode.value = resultForSelectFolderNode[0]
+    }
+  }
   // console.log('select folder node', selectFolderNode.value);
   // console.log('node tree', nodeTree.value);
 })
-
-// change textarea input box height
-const changeHeightHandler = (event) => {
-  event.target.style.height = 'auto'
-  event.target.style.height = `${event.target.scrollHeight}px`
-}
 </script>
 
 <template>
@@ -153,36 +182,36 @@ const changeHeightHandler = (event) => {
           <Iconify icon="ph:text-aa-fill" class="section-title-icon"></Iconify>
           <span class="text-base font-semibold">名称</span>
         </p>
-        <div class="textarea-container border-gray-200 focus-within:border-gray-400">
+        <div class="textarea-container border-gray-300 focus-within:border-gray-400 shadow-sm shadow-gray-100">
           <textarea name="bookmark name" id="bookmark-name" class="text-gray-700 placeholder:text-gray-300" placeholder="请输入书签的名称" v-model="bookmarkTitle" @input="changeHeightHandler"></textarea>
-          </div>
+        </div>
       </section>
       <section class="focus-within:bg-sky-50/50">
         <p class="section-title text-sky-500">
           <Iconify icon="ph:link-fill" class="section-title-icon"></Iconify>
           <span class="text-base font-semibold">链接</span>
         </p>
-        <div class="textarea-container border-sky-200 focus-within:border-sky-400">
+        <div class="textarea-container border-sky-300 focus-within:border-sky-400 shadow shadow-sky-50">
           <textarea name="bookmark url" id="bookmark-url" class="text-sky-600 placeholder:text-sky-200" placeholder="请输入书签的链接地址" v-model="bookmarkURL" @input="changeHeightHandler"></textarea>
         </div>
       </section>
       <section>
         <div class="flex justify-between items-center">
           <div class="flex justify-start items-center gap-4">
-            <p class="section-title text-orange-300">
+            <p class="section-title text-amber-300">
               <Iconify icon="ph:folder-notch-fill" class="section-title-icon"></Iconify>
               <span class="text-base font-semibold">文件夹</span>
             </p>
-            <button class="group px-2 py-1 rounded transition-colors duration-300" :class="selectFolderNode ? 'hover:bg-orange-400' : ''" :disabled="!selectFolderNode">
-              <span v-if="selectFolderNode" class="text-orange-400 font-bold group-hover:text-white underline decoration-wavy decoration-2 decoration-orange-400 underline-offset-2">{{ selectFolderNode.title }}</span>
-              <span v-else class="text-xs font-bold text-orange-300 underline decoration-2 decoration-orange-300 underline-offset-2">请选择文件夹 👇</span>
+            <button class="group px-2 py-1 rounded transition-colors duration-300" :class="selectFolderNode ? 'hover:bg-amber-400' : ''" :disabled="!selectFolderNode">
+              <span v-if="selectFolderNode" class="text-amber-400 font-bold group-hover:text-white underline decoration-wavy decoration-2 decoration-amber-400 underline-offset-2">{{ selectFolderNode.title }}</span>
+              <span v-else class="text-xs font-bold text-amber-300 underline decoration-2 decoration-amber-300 underline-offset-2">请选择文件夹 👇</span>
             </button>
           </div>
-          <button class="p-1.5 text-orange-400 hover:text-white hover:bg-orange-400 rounded transition-colors duration-300">
+          <button class="p-1.5 text-amber-400 hover:text-white hover:bg-amber-400 rounded transition-colors duration-300">
             <Iconify icon="ph:magnifying-glass" class="w-4 h-4"></Iconify>
           </button>
         </div>
-        <div class="w-full max-h-[500px] rounded-md shadow shadow-orange-100">
+        <div class="w-full max-h-[500px] rounded-md shadow shadow-amber-100">
           <FolderGrid :folder-path="folderPath" :nodes="sortedNodes"></FolderGrid>
         </div>
       </section>

@@ -13,7 +13,7 @@ const props = defineProps(['folder-path', 'nodes'])
         <span v-if="index < folderPath.length -1">/</span>
       </div>
     </div>
-    <div class="nodes-container w-full px-4 pb-3 grid grid-cols-4 gap-2 grid-flow-row-dense justify-items-start">
+    <div class="grid-container w-full px-4 pb-3 grid grid-cols-4 gap-2 grid-flow-row-dense justify-items-start">
       <template v-for="node in nodes">
         <div v-if="!node.children" :key="node.id" class="px-2 py-1 flex justify-center items-start gap-1 text-blue-400 opacity-[.75] select-none">
           <!-- <img v-if="node.url" :src="useGetFaviconURL(node.url)" alt="bookmark icon" class="shrink-0 w-4 h-4"> -->
@@ -27,9 +27,10 @@ const props = defineProps(['folder-path', 'nodes'])
 </template>
 
 <style lang="scss" scoped>
-.nodes-container {
-  grid-auto-rows: 28px
+.grid-container {
+  grid-auto-rows: 36px
 }
+
 .line-camp-1 {
   overflow: hidden;
   display: -webkit-box;
