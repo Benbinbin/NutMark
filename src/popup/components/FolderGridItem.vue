@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, nextTick, inject } from 'vue'
+import { ref, computed, nextTick, inject, onMounted, watch } from 'vue'
 import { Icon as Iconify } from '@iconify/vue'
 import { useGetFaviconURL } from '@/composables/getFaviconURL'
 
@@ -171,10 +171,37 @@ const setNodeTreeId = inject('setNodeTreeId')
 const selectFolderType = inject('selectFolderType')
 const selectFolderNodeId = inject('selectFolderNodeId')
 const setSelectFolderId = inject('setSelectFolderId')
+
+// new folder
 const newFolder = inject('newFolder')
+const newFolderTitle = ref('')
+const newFolderTitleEdit = ref(false)
+
+// input
+const inputDOM = ref(null)
+watch(newFolderTitleEdit, () => {
+  if(newFolderTitleEdit.value ) {
+    newFolderTitle.value = newFolder.value.title
+    nextTick(() => {
+      if(inputDOM.value) inputDOM.value.focus()
+    })
+  }
+})
+
 const setNewFolder = inject('setNewFolder')
-const newFolderTitle = ref('新建文件夹')
+// set the new folder
 const addNewFolder = () => {
+  // the default title is 「新建文件夹」
+  newFolderTitle.value = '新建文件夹'
+  setNewFolder({
+    index: 0,
+    parentId: folderNavArr.value[0].id,
+    title: newFolderTitle.value
+  })
+  newFolderTitleEdit.value = true
+}
+const setNewFolderHandler = () => {
+  newFolderTitleEdit.value = false
   setNewFolder({
     index: 0,
     parentId: folderNavArr.value[0].id,
@@ -193,7 +220,7 @@ const addNewFolder = () => {
       @click="expand = true">
         <Iconify :icon="props.rootTree.length > 0 ? 'ph:folder-fill' : 'ph:folder'" class="w-5 h-5" />
       </button>
-      <button class="pl-0.5 pr-1 py-1 text-sm break-all  transition-colors duration-300"
+      <button class="pl-0.5 pr-1 py-1 text-sm break-all transition-colors duration-300"
       :class="(selectFolderType === 'old' && selectFolderNodeId === props.rootId) ? 'text-white bg-green-500 rounded-r' : 'text-gray-700 hover:text-green-600 hover:bg-green-100 rounded'"
       @click="setSelectFolderId(props.rootId)">{{ props.rootName }}</button>
     </div>
@@ -213,9 +240,9 @@ const addNewFolder = () => {
             </button>
             <button class="pl-0.5 pr-1 py-1 hover:text-green-500 hover:bg-green-100 rounded transition-colors duration-300" @click="setSelectFolderId(folderNavArr[0].id)">{{ folderNavArr[0].title || '未命名文件夹' }}</button>
           </div>
-          <button class="shrink-0 rounded-full transition-colors duration-300" :class="(selectFolderType === 'old' && selectFolderNodeId === folderNavArr[0].id) ? 'text-green-500 hover:text-green-600 bg-green-200/80 hover:bg-green-200' : 'text-orange-500 hover:text-orange-600 bg-orange-100 hover:bg-orange-200'"
-          @click="addNewFolder">
-            <Iconify icon="ion:ios-add" class="w-4 h-4" />
+          <button class="shrink-0 p-1 rounded transition-colors duration-300" :class="(selectFolderType === 'old' && selectFolderNodeId === folderNavArr[0].id) ? 'text-green-500 hover:text-green-600 hover:bg-green-200' : 'text-orange-500 hover:text-orange-600 hover:bg-orange-200'" @click="setNodeTreeId(folderNavArr[0].id)"
+          >
+            <Iconify icon="ph:arrow-square-out" class="w-4 h-4" />
           </button>
         </div>
         <!-- folder nav items -->
@@ -235,18 +262,21 @@ const addNewFolder = () => {
           <button v-show="showScrollBtn" :disabled="scrollPos === 'start'"
             class="p-1 hidden sm:flex items-center text-gray-500 active:text-white bg-gray-100 hover:bg-gray-200 active:bg-gray-500 rounded-full transition-colors duration-300"
             :class="scrollPos === 'start' ? 'opacity-30' : ''" @click="scrollFolderNavHandler('left')">
-            <Iconify icon="ic:round-keyboard-arrow-left" class="w-3.5 h-3.5" />
+            <Iconify icon="ic:round-keyboard-arrow-left" class="w-4 h-4" />
           </button>
           <button v-show="showScrollBtn" :disabled="scrollPos === 'end'"
             class="p-1 hidden sm:flex items-center text-gray-500 active:text-white bg-gray-100 hover:bg-gray-200 active:bg-gray-500 rounded-full transition-colors duration-300"
             :class="scrollPos === 'end' ? 'opacity-30' : ''" @click="scrollFolderNavHandler('right')">
-            <Iconify icon="ic:round-keyboard-arrow-right" class="w-3.5 h-3.5" />
+            <Iconify icon="ic:round-keyboard-arrow-right" class="w-4 h-4" />
           </button>
-          <button
+          <button title="add new sub folder"
+            :disabled="newFolder && newFolder.parentId === folderNavArr[0].id"
             class="p-1 flex items-center rounded-full transition-colors duration-300"
-            :class="(selectFolderType === 'old' && selectFolderNodeId === folderNavArr[0].id) ? 'text-green-500 bg-green-50 hover:bg-green-100' : 'text-orange-400 hover:text-orange-500 bg-orange-50 hover:bg-orange-100'"
-            @click="setNodeTreeId(folderNavArr[0].id)">
-            <Iconify icon="ion:chevron-expand" class="w-3.5 h-3.5" />
+            :class="(selectFolderType === 'old' && selectFolderNodeId === folderNavArr[0].id) ? 'text-green-500 hover:text-green-600 active:text-white bg-green-100 hover:bg-green-200 active:bg-green-500' : 'text-orange-400 hover:text-orange-500 active:text-white bg-orange-100 hover:bg-orange-200 active:bg-orange-500'"
+            :style="newFolder && newFolder.parentId === folderNavArr[0].id ? 'opacity: 0.3' : ''"
+            @click="addNewFolder"
+            >
+            <Iconify icon="ic:round-plus" class="w-4 h-4" />
           </button>
         </div>
       </div>
@@ -255,11 +285,20 @@ const addNewFolder = () => {
       :class="(selectFolderType === 'old' && selectFolderNodeId === folderNavArr[0].id) ? 'border-green-300 ' : 'border-orange-300'">
         <div class="flex flex-wrap justify-start items-start gap-1">
           <!-- new folder -->
-          <div v-if="newFolder && newFolder.parentId === folderNavArr[0].id" class="flex justify-center items-center rounded" :class="selectFolderType === 'new' ? 'bg-purple-500' : 'bg-purple-100'">
-            <button class="pl-1.5 pr-0.5 py-1.5 rounded transition-colors duration-300" :class="selectFolderType === 'new' ? 'text-white' : 'text-purple-500 hover:text-purple-600'" @click="addNewFolder">
-              <Iconify icon="ph:folder-dashed" class="shrink-0 w-4 h-4"></Iconify>
-            </button>
-            <input type="text" v-model="newFolderTitle" class=" px-1.5 ml-0.5 mr-1.5 my-1.5 text-xs text-purple-500 focus:text-purple-600 border border-purple-500 focus:outline-none rounded-md" @focus="addNewFolder">
+          <div v-if="selectFolderType === 'new' && newFolder && newFolder.parentId === folderNavArr[0].id" class="p-1.5 flex justify-center items-center gap-1 text-white bg-purple-500 hover:bg-purple-600 rounded transition-colors duration-300">
+            <Iconify icon="ph:folder-dashed" class="shrink-0 w-4 h-4" ></Iconify>
+            <div v-show="newFolderTitleEdit" class="flex justify-center items-center gap-2">
+              <input ref="inputDOM" type="text" placeholder="请输入目录名称" v-model="newFolderTitle" class="px-1.5 text-xs text-purple-500 placeholder:text-purple-300 focus:text-purple-600 outline outline-1 outline-purple-400 focus:outline-purple-500 rounded-md" @keyup.enter="setNewFolderHandler">
+              <button class="shrink-0 p-0.5 text-green-600 hover:text-white bg-green-300 hover:bg-green-400 rounded transition-colors duration-300" @click="setNewFolderHandler">
+                <Iconify icon="ph:check-bold" class="w-3 h-3"></Iconify>
+              </button>
+            </div>
+            <div v-show="!newFolderTitleEdit" class="flex justify-center items-center gap-2">
+              <span class="text-xs text-white" @dblclick="newFolderTitleEdit=true">{{ newFolder.title || '未命名文件夹' }}</span>
+              <button class="shrink-0 p-0.5 text-purple-600 hover:text-white bg-purple-50 hover:bg-purple-400 rounded transition-colors duration-300" @click="newFolderTitleEdit=true">
+                <Iconify icon="ph:cursor-text" class="w-3 h-3"></Iconify>
+              </button>
+            </div>
           </div>
           <!-- children item of the folder -->
           <template v-for="(item, index) in sortedTree">

@@ -30,6 +30,7 @@ const nodeTreeId = ref('0')
 const setNodeTreeId = (id) => {
   nodeTreeId.value = id
 }
+provide('nodeTreeId', nodeTreeId)
 provide('setNodeTreeId', setNodeTreeId)
 
 const nodeTree = ref(null) // an object
@@ -79,6 +80,7 @@ const selectFolderNodeId = ref('1')
 const setSelectFolderId = (id) => {
   selectFolderNodeId.value = id
   selectFolderType.value = 'old'
+  newFolder.value = null // clean cache for the new folder
 }
 provide('selectFolderType', selectFolderType)
 provide('selectFolderNodeId', selectFolderNodeId)
@@ -232,9 +234,9 @@ onMounted(async () => {
               <span v-if="selectFolderNode">{{ selectFolderNode.title }}</span>
               <span v-else class="underline decoration-wavy decoration-2 decoration-green-300 underline-offset-2">请选择文件夹 👇</span>
             </button>
-            <div v-if="newFolder && selectFolderType==='new'" class="group relative">
+            <div v-if="newFolder && selectFolderType==='new'" class="relative">
               <button class="px-2 py-1.5 text-xs font-bold text-purple-500 hover:text-white bg-purple-200/60 hover:bg-purple-500 rounded transition-colors duration-300" @click="setNodeTreeId(newFolder.parentId)">{{ newFolder.title || '未命名文件夹' }}</button>
-              <sup class="px-1.5 py-0.5 group-hover:hidden absolute -top-3 -right-4 rotate-45 text-xs text-white bg-orange-400 rounded-full select-none">new</sup>
+              <sup class="px-2 py-0.5 flex justify-center absolute -top-2 -right-4 text-xs text-white bg-red-400 rounded-full scale-[0.8] rotate-45 select-none">new</sup>
             </div>
           </div>
           <button class="p-1.5 text-orange-400 hover:text-white hover:bg-orange-400 rounded transition-colors duration-300">
