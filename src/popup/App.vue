@@ -152,11 +152,7 @@ const getFolderIdAndTreeId = async (bookmarkNode) => {
   }
 }
 
-// init the state
-onMounted(async () => {
-  // const rootTree = await chrome.bookmarks.getTree()
-  // console.log('root tree', rootTree);
-
+const setBookmarkParameters = async () => {
   const { tabTitle, tabUrl } = await getTabInfo()
 
   bookmarkTitle.value = tabTitle;
@@ -164,15 +160,15 @@ onMounted(async () => {
 
   // check the url bookmark state
   const result = await useCheckBookmarkState(bookmarkURL.value);
-  console.log(result);
-  if(result) {
+  // console.log(result);
+  if (result) {
     bookmarkId.value = result.id
     bookmarkState.value = true
   } else {
     bookmarkState.value = false
   }
 
-  if(bookmarkState.value) {
+  if (bookmarkState.value) {
     // if the url already bookmarked
     const resultForBookmarkNode = await chrome.bookmarks.search({
       url: bookmarkURL.value
@@ -189,7 +185,7 @@ onMounted(async () => {
     const recentBookmarkArr = await chrome.bookmarks.getRecent(1)
     // console.log('get recent bookmarks', recentBookmarkArr);
 
-    if(recentBookmarkArr.length > 0) {
+    if (recentBookmarkArr.length > 0) {
       // if there is a bookmark created recently
       const recentBookmark = recentBookmarkArr[0]
       const result = await getFolderIdAndTreeId(recentBookmark)
@@ -207,19 +203,34 @@ onMounted(async () => {
   }
   // console.log('select folder node', selectFolderNode.value);
   // console.log('node tree', nodeTree.value);
+}
+
+// init the state
+onMounted(async () => {
+  // const rootTree = await chrome.bookmarks.getTree()
+  // console.log('root tree', rootTree);
+  await setBookmarkParameters()
+
 })
 
 /**
  * create bookmark
  */
 const createBookmark = async () => {
+  let folderNodeId;
   if(selectFolderType.value === 'old') {
-    await chrome.bookmarks.create({
-      parentId: selectFolderNodeId.value,
-      title: bookmarkTitle.value,
-      url: bookmarkURL.value
-    })
+    folderNodeId = selectFolderNodeId.value
+  } else if (selectFolderType.value === 'new') {
+    // console.log(newFolder.value);
+    const folderNode = await chrome.bookmarks.create(newFolder.value)
+    folderNodeId = folderNode.id
   }
+
+  await chrome.bookmarks.create({
+    parentId: folderNodeId,
+    title: bookmarkTitle.value,
+    url: bookmarkURL.value
+  })
 
   // close the popup page when finish
   window.close()

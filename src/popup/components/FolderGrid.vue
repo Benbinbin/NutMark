@@ -57,13 +57,13 @@ const setNewFolderHandler = () => {
     <!-- grid header -->
     <div class="px-2 py-1.5 flex justify-between items-start gap-4 bg-orange-50/50 border-b border-orange-200 rounded-t-md shadow shadow-orange-50">
       <div class="grow flex justify-start items-start">
-        <button title="show bookmark or just show folder" @click="showBookmark = !showBookmark" class="shrink-0 p-1  rounded transition-colors duration-300" :class="showBookmark ? 'hover:bg-orange-100' : 'hover:bg-orange-200'">
+        <button title="show bookmark or just show folder" @click="showBookmark = !showBookmark" class="shrink-0 p-1 rounded transition-colors duration-300" :class="showBookmark ? 'hover:bg-orange-100' : 'hover:bg-orange-200'">
           <img src="@/assets/nut-mark.svg" alt="nut mark icon" class="w-4 h-4" :class="showBookmark ? 'opacity-100' : 'opacity-30'">
         </button>
         <!-- folder path -->
         <div class="flex flex-wrap justify-start items-center gap-1">
-          <div v-for="(folder, index) in folderPath" :key="folder.id" class="flex justify-center items-center gap-1 text-orange-500">
-            <button class="px-2 py-1 text-xs font-bold rounded transition-colors duration-300"
+          <div v-for="(folder, index) in folderPath" :key="folder.id" class="flex justify-center items-center gap-0.5 text-orange-500">
+            <button class="px-1.5 py-1 text-xs font-bold rounded transition-colors duration-300"
             :class="selectFolderType === 'old' && selectFolderNodeId === folder.id ? 'text-green-500 hover:bg-green-100 ' : 'text-orange-500 hover:bg-orange-100 '"
             @click="setNodeTreeId(folder.id)">{{ folder.id === '0' ? '根目录' : (folder.title || '未命名文件夹') }}</button>
             <span v-if="index < folderPath.length -1">/</span>
