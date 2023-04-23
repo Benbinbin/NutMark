@@ -71,10 +71,10 @@ const setNewFolderHandler = () => {
         </div>
       </div>
       <div>
-        <button title="add new sub folder"
-          :disabled="newFolder && newFolder.parentId === nodeTreeId"
+        <button v-if="nodeTreeId !== '0'" title="add new sub folder"
+          :disabled="nodeTreeId === '0' || (newFolder && newFolder.parentId === nodeTreeId)"
           class="p-1 flex items-center text-orange-500 hover:text-orange-600 active:text-white bg-orange-100 hover:bg-orange-200 active:bg-orange-500 rounded-full transition-colors duration-300"
-          :style="newFolder && newFolder.parentId === nodeTreeId ? 'opacity: 0.3' : ''"
+          :style="nodeTreeId === '0' || (newFolder && newFolder.parentId === nodeTreeId) ? 'opacity: 0.3' : ''"
           @click="addNewFolder"
           >
           <Iconify icon="ic:round-plus" class="w-4 h-4" />
