@@ -208,6 +208,9 @@ const setNewFolderHandler = () => {
     title: newFolderTitle.value
   })
 }
+
+// show bookmark
+const showBookmark = inject('showBookmark')
 </script>
 <template>
   <div class="self-stretch w-full max-h-full"
@@ -288,9 +291,9 @@ const setNewFolderHandler = () => {
           <div v-if="selectFolderType === 'new' && newFolder && newFolder.parentId === folderNavArr[0].id" class="p-1.5 flex justify-center items-center gap-1 text-white bg-purple-500 hover:bg-purple-600 rounded transition-colors duration-300">
             <Iconify icon="ph:folder-dashed" class="shrink-0 w-4 h-4" ></Iconify>
             <div v-show="newFolderTitleEdit" class="flex justify-center items-center gap-2">
-              <input ref="inputDOM" type="text" placeholder="请输入目录名称" v-model="newFolderTitle" class="px-1.5 text-xs text-purple-500 placeholder:text-purple-300 focus:text-purple-600 outline outline-1 outline-purple-400 focus:outline-purple-500 rounded-md" @keyup.enter="setNewFolderHandler">
-              <button class="shrink-0 p-0.5 text-green-600 hover:text-white bg-green-300 hover:bg-green-400 rounded transition-colors duration-300" @click="setNewFolderHandler">
-                <Iconify icon="ph:check-bold" class="w-3 h-3"></Iconify>
+              <input ref="inputDOM" type="text" placeholder="请输入目录名称" v-model="newFolderTitle" class="px-1.5 text-xs text-purple-500 placeholder:text-purple-300 focus:text-purple-600 outline outline-1 outline-purple-400 focus:outline-purple-500 rounded-md" @keyup.enter="setNewFolderHandler" @blur="setNewFolderHandler">
+              <button class="shrink-0 p-1 text-green-800 hover:text-white bg-green-200 hover:bg-green-400 rounded transition-colors duration-300" @click="setNewFolderHandler">
+                <Iconify icon="ph:check-bold" class="w-2 h-2"></Iconify>
               </button>
             </div>
             <div v-show="!newFolderTitleEdit" class="flex justify-center items-center gap-2">
@@ -303,7 +306,7 @@ const setNewFolderHandler = () => {
           <!-- children item of the folder -->
           <template v-for="(item, index) in sortedTree">
             <!-- bookmark item -->
-            <div v-if="!item.children" :key="item.id" class="p-1.5 flex justify-center items-center gap-1 text-blue-400 select-none">
+            <div v-if="!item.children" v-show="showBookmark" :key="item.id" class="p-1.5 flex justify-center items-center gap-1 text-blue-400 select-none">
               <img v-if="item.url" :src="useGetFaviconURL(item.url)" alt="bookmark icon" class="shrink-0 w-4 h-4">
               <Iconify v-else icon="ph:planet-fill" class="shrink-0 w-4 h-4"></Iconify>
               <span class="line-camp-1 text-xs">{{ item.title || '未命名书签' }}</span>

@@ -203,7 +203,7 @@ onMounted(async () => {
         </button>
       </div>
     </header>
-    <main class="px-4 space-y-2">
+    <main class="px-4 pt-2 space-y-2">
       <section class=" focus-within:bg-gray-50">
         <p class="section-title text-gray-500">
           <Iconify icon="ph:text-aa-fill" class="section-title-icon"></Iconify>
