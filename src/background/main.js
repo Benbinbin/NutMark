@@ -11,7 +11,10 @@ chrome.tabs.onActivated.addListener(async (activeInfo) => {
   const url = tab.url || tab.pendingUrl;
 
   let bookmarkState = false;
-  if (url) bookmarkState = await useCheckBookmarkState(url);
+  if (url) {
+    const result = await useCheckBookmarkState(url);
+    if(result) bookmarkState = true
+  }
 
   // set tab bookmark state
   // await chrome.storage.local.set({ bookmarkState });
@@ -34,7 +37,10 @@ chrome.windows.onFocusChanged.addListener(async (windowId) => {
   const url = tab.url || tab.pendingUrl;
 
   let bookmarkState = false;
-  if (url) bookmarkState = await useCheckBookmarkState(url);
+  if (url) {
+    const result = await useCheckBookmarkState(url);
+    if(result) bookmarkState = true
+  }
 
   // set tab bookmark state
   // await chrome.storage.local.set({ bookmarkState });
@@ -52,7 +58,10 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
   // when tab update url check the bookmark state
   const { url } = changeInfo;
-  const bookmarkState = await useCheckBookmarkState(url);
+
+  let bookmarkState = false
+  const result = await useCheckBookmarkState(url);
+  if(result) bookmarkState = true
 
   // set tab bookmark state
   // await chrome.storage.local.set({
@@ -76,7 +85,9 @@ chrome.bookmarks.onCreated.addListener(async (id, bookmarkNode) => {
 
   const url = tab.url || tab.pendingUrl;
 
-  const bookmarkState = await useCheckBookmarkState(url);
+  let bookmarkState = false
+  const result = await useCheckBookmarkState(url);
+  if(result) bookmarkState = true
 
   // set tab bookmark state
   // await chrome.storage.local.set({ bookmarkState });
@@ -96,7 +107,9 @@ chrome.bookmarks.onRemoved.addListener(async (id, bookmarkNode) => {
 
   const url = tab.url || tab.pendingUrl;
 
-  const bookmarkState = await useCheckBookmarkState(url);
+  let bookmarkState = false
+  const result = await useCheckBookmarkState(url);
+  if (result) bookmarkState = true
 
   // set tab bookmark state
   // await chrome.storage.local.set({ bookmarkState });

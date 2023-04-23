@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, watch, provide } from 'vue';
+import { onMounted, ref, watch, provide, nextTick } from 'vue';
 import { useCheckBookmarkState } from '@/composables/checkBookmarkState'
 import { useGetFaviconURL } from '@/composables/getFaviconURL'
 import { Icon as Iconify } from '@iconify/vue'
@@ -9,6 +9,7 @@ import FolderGrid from './components/FolderGrid.vue'
  * bookmark information
  */
 const bookmarkState = ref(false)
+const bookmarkId = ref(null)
 const bookmarkTitle = ref('')
 const bookmarkURL = ref('')
 
@@ -22,7 +23,7 @@ const changeHeightHandler = (event) => {
 }
 
 /**
- * folder
+ * node tree
  */
 // node tree (with children property)
 // root node is the default start point of node tree
@@ -73,8 +74,12 @@ onMounted(() => {
   }, { immediate: true })
 })
 
-// the folder node selected (an object without children property)
+/**
+ * select folder
+ */
 const selectFolderType = ref('old')
+
+// select the "old" (existed) folder
 // 「书签栏」 is the default selected folder id
 const selectFolderNodeId = ref('1')
 const setSelectFolderId = (id) => {
@@ -86,6 +91,7 @@ provide('selectFolderType', selectFolderType)
 provide('selectFolderNodeId', selectFolderNodeId)
 provide('setSelectFolderId', setSelectFolderId)
 
+// the folder node selected (an object without children property)
 const selectFolderNode = ref(null) // an object
 onMounted(() => {
   // get the node tree object
@@ -96,7 +102,7 @@ onMounted(() => {
   }, { immediate: true })
 })
 
-// new folder
+// select the new folder
 const newFolder = ref(null)
 const setNewFolder = (newFolderObj) => {
   newFolder.value = newFolderObj
@@ -108,6 +114,19 @@ provide('setNewFolder', setNewFolder)
 /**
  * get init information
  */
+const getTabInfo = async () => {
+  // get current tab
+  const [tab] = await chrome.tabs.query({
+    active: true,
+    currentWindow: true,
+  });
+
+  return {
+    tabTitle: tab.title,
+    tabUrl: tab.url || tab.pendingUrl
+  }
+}
+
 // get the folder and node tree id of the given bookmark node
 // with fallback solution to the root node and 「书签栏」
 const getFolderIdAndTreeId = async (bookmarkNode) => {
@@ -138,15 +157,20 @@ onMounted(async () => {
   // const rootTree = await chrome.bookmarks.getTree()
   // console.log('root tree', rootTree);
 
-  // get current tab
-  const [tab] = await chrome.tabs.query({
-    active: true,
-    currentWindow: true,
-  });
+  const { tabTitle, tabUrl } = await getTabInfo()
 
-  bookmarkTitle.value = tab.title
-  bookmarkURL.value = tab.url || tab.pendingUrl;
-  bookmarkState.value = await useCheckBookmarkState(bookmarkURL.value);
+  bookmarkTitle.value = tabTitle;
+  bookmarkURL.value = tabUrl;
+
+  // check the url bookmark state
+  const result = await useCheckBookmarkState(bookmarkURL.value);
+  console.log(result);
+  if(result) {
+    bookmarkId.value = result.id
+    bookmarkState.value = true
+  } else {
+    bookmarkState.value = false
+  }
 
   if(bookmarkState.value) {
     // if the url already bookmarked
@@ -184,6 +208,38 @@ onMounted(async () => {
   // console.log('select folder node', selectFolderNode.value);
   // console.log('node tree', nodeTree.value);
 })
+
+/**
+ * create bookmark
+ */
+const createBookmark = async () => {
+  if(selectFolderType.value === 'old') {
+    await chrome.bookmarks.create({
+      parentId: selectFolderNodeId.value,
+      title: bookmarkTitle.value,
+      url: bookmarkURL.value
+    })
+  }
+
+  // close the popup page when finish
+  window.close()
+}
+
+/**
+ * delete bookmark
+ */
+const showDeleteBookmarkPrompt = ref(false)
+const deleteBookmark = async () => {
+  if(bookmarkId.value) {
+    await chrome.bookmarks.remove(bookmarkId.value)
+    bookmarkState.value = false
+    bookmarkId.value = null
+  }
+  showDeleteBookmarkPrompt.value = false
+
+  // close the popup page when finish
+  window.close()
+}
 </script>
 
 <template>
@@ -194,13 +250,18 @@ onMounted(async () => {
         <Iconify v-else icon="ph:planet-fill" class="inline-block w-6 h-6 text-green-500"></Iconify>
       </div>
       <div class="flex justify-center items-center gap-2">
-        <button class="group px-2 py-1 flex justify-center items-center gap-1 text-xs font-bold hover:text-white bg-transparent border-2 rounded transition-colors duration-300" :class="bookmarkState ? 'text-amber-500 hover:bg-red-500 border-amber-500 hover:border-red-500' : 'text-emerald-500 hover:bg-emerald-500 border-emerald-500'">
-          <img v-if="bookmarkState" src="@/assets/nut-mark.svg" alt="nut mark icon" class="w-4 h-4">
-          <img v-else src="@/assets/nut-unmark.svg" alt="nut unmark icon" class="w-4 h-4">
-          <span class="inline-block group-hover:hidden">{{ bookmarkState ? '已收藏' : '未收藏' }}</span>
-          <span v-if="bookmarkState" class="w-[36px] hidden group-hover:inline-block">删除</span>
-          <span v-else class="w-[36px] hidden group-hover:inline-block">添加</span>
+        <button v-if="bookmarkState" class="group px-2 py-1 flex justify-center items-center gap-1 text-xs font-bold text-amber-500 hover:text-white bg-transparent hover:bg-red-500 border-amber-500 hover:border-red-500 border-2 rounded transition-colors duration-300" @click="showDeleteBookmarkPrompt=true">
+          <img src="@/assets/nut-mark.svg" alt="nut mark icon" class="w-4 h-4">
+          <span class="inline -block group-hover:hidden">已收藏</span>
+          <span class="w-[36px] hidden group-hover:inline-block">删除</span>
         </button>
+        <button v-if="!bookmarkState" :disabled="!bookmarkURL" class="group px-2 py-1 flex justify-center items-center gap-1 text-xs font-bold text-emerald-500 hover:text-white bg-transparent hover:bg-emerald-500 border-emerald-500  border-2 rounded transition-colors duration-300"
+        :class="!bookmarkURL ? 'hover:opacity-10' : ''"
+        @click="createBookmark">
+            <img src="@/assets/nut-unmark.svg" alt="nut unmark icon" class="w-4 h-4">
+            <span class="inline-block group-hover:hidden">未收藏</span>
+            <span class="w-[36px] hidden group-hover:inline-block">添加</span>
+          </button>
       </div>
     </header>
     <main class="px-4 pt-2 space-y-2">
@@ -248,6 +309,18 @@ onMounted(async () => {
         </div>
       </section>
     </main>
+
+    <Teleport to="body">
+      <div v-show="showDeleteBookmarkPrompt" class="fixed inset-0 flex justify-center items-center bg-black/50 backdrop-blur-sm" @wheel="$event.preventDefault()">
+        <div class="px-10 py-6 flex flex-col justify-center items-center gap-8 bg-white rounded-md">
+          <h2 class="text-xl font-bold text-gray-600">删除当前书签</h2>
+          <div class="flex justify-center items-center gap-4">
+            <button class="px-4 py-2 text-white bg-red-500 hover:bg-red-600 rounded transition-colors duration-300" @click="deleteBookmark">确认</button>
+            <button class="px-4 py-2 text-white bg-gray-400 hover:bg-gray-500 rounded transition-colors duration-300" @click="showDeleteBookmarkPrompt=false">取消</button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
