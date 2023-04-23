@@ -26,6 +26,13 @@ const sortedTree = computed(() => {
   })
   return currentTree.value
 })
+const folderNum = computed(() => {
+  let num = 0
+  currentTree.value.forEach(node => {
+    if(node.children) num++
+  })
+  return num
+})
 
 /**
  * folder nav
@@ -214,13 +221,13 @@ const showBookmark = inject('showBookmark')
 </script>
 <template>
   <div class="self-stretch w-full max-h-full"
-    :class="expand ? (currentTree.length <= 2 ? 'col-span-2 row-span-2' : (currentTree.length <= 4 ? 'col-span-2 row-span-2' : (currentTree.length <= 12 ? 'col-span-2 row-span-3' : 'col-span-2 row-span-4'))) : 'col-span-1 row-span-1'">
+    :class="expand ? (folderNum <= 2 ? 'col-span-2 row-span-2' : (folderNum <= 4 ? 'col-span-2 row-span-2' : (folderNum <= 12 ? 'col-span-2 row-span-3' : 'col-span-2 row-span-4'))) : 'col-span-1 row-span-1'">
     <!-- collapse the folder -->
     <div v-show="!expand" :title="props.rootName"
       class="flex justify-start items-start">
       <button class="shrink-0 pl-1 pr-0.5 py-1 transition-colors duration-300"
       :class="(selectFolderType === 'old' && selectFolderNodeId === props.rootId) ? 'text-white bg-green-500 hover:bg-green-600 rounded-l' : 'text-orange-300 hover:text-orange-400 hover:bg-orange-50 rounded'"
-      @click="expand = true">
+      @click.exact="expand = true" @click.ctrl.exact="setNodeTreeId(props.rootId)">
         <Iconify :icon="props.rootTree.length > 0 ? 'ph:folder-fill' : 'ph:folder'" class="w-5 h-5" />
       </button>
       <button class="pl-0.5 pr-1 py-1 text-sm break-all transition-colors duration-300"
