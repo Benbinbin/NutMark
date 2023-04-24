@@ -397,7 +397,7 @@ const deleteBookmark = async () => {
               <span class="text-base font-semibold">名称</span>
             </p>
           </div>
-          <button class="p-1 rounded text-gray-300 hover:text-gray-500 active:text-white hover:bg-gray-200 active:bg-gray-500 transition-colors duration-300" @click="resetBookmarkTitle">
+          <button v-show="tabTitle !== bookmarkTitle" class="p-1.5 text-gray-300 hover:text-gray-500 active:text-white hover:bg-gray-200 active:bg-gray-500 rounded-full transition-colors duration-300" @click="resetBookmarkTitle">
             <Iconify icon="ph:arrow-counter-clockwise" class="w-4 h-4"></Iconify>
           </button>
         </div>
@@ -405,7 +405,7 @@ const deleteBookmark = async () => {
           <textarea name="bookmark name" id="bookmark-name" class="text-gray-700 placeholder:text-gray-300" placeholder="请输入书签的名称" v-model="bookmarkTitle" @input="changeHeightHandler"></textarea>
         </div>
       </section>
-      <section class="focus-within:bg-sky-50/50">
+      <section :class="urlValidate ? (showURLBtn ? '' : 'focus-within:bg-sky-50/50') : 'focus-within:bg-red-50/50'">
         <div class="flex justify-between items-end">
           <div class="flex justify-start items-end gap-2">
             <p class="section-title text-sky-500">
@@ -420,24 +420,61 @@ const deleteBookmark = async () => {
               <span class="text-xs text-red-500">请输入格式正确的链接</span>
             </div>
           </div>
-          <div class="flex justify-center items-center gap-2">
-            <button class="p-1 rounded transition-colors duration-300" :class="showURLBtn ? 'text-white bg-yellow-400 hover:bg-yellow-300' : 'text-yellow-300 hover:text-yellow-400 hover:bg-yellow-100'"
+          <div class="flex justify-center items-center gap-1">
+            <button v-show="urlValidate" class="p-1.5 flex justify-center items-center gap-1 rounded-full transition-colors duration-300" :class="showURLBtn ? 'text-white bg-sky-500 hover:bg-sky-400' : 'text-sky-200 hover:text-sky-500 active:text-white hover:bg-sky-100 active:bg-sky-500'"
             @click="showURLBtn = !showURLBtn">
-              <Iconify icon="ph:lightbulb-fill" class="w-4 h-4"></Iconify>
+              <Iconify icon="ph:cursor-click" class="w-4 h-4"></Iconify>
             </button>
-            <button class="p-1 rounded text-sky-200 hover:text-sky-500 active:text-white hover:bg-sky-100 active:bg-sky-500 transition-colors duration-300" @click="resetBookmarkURL">
+            <button v-show="tabURL !== bookmarkURL" class="p-1.5 text-sky-200 hover:text-sky-500 active:text-white hover:bg-sky-100 active:bg-sky-500 rounded-full transition-colors duration-300" @click="resetBookmarkURL">
               <Iconify icon="ph:arrow-counter-clockwise" class="w-4 h-4"></Iconify>
             </button>
           </div>
         </div>
         <div class="space-y-2">
-          <div class="textarea-container shadow" :class="urlValidate ? 'border-sky-300 focus-within:border-sky-400 shadow-sky-50' : 'border-red-300 focus-within:border-red-400 shadow-red-50'">
-            <textarea name="bookmark url" id="bookmark-url" :class="urlValidate ? 'text-sky-600 placeholder:text-sky-200' : 'text-red-600'" placeholder="请输入书签的链接地址" v-model="bookmarkURL" @input="urlInputHandler"></textarea>
-          </div>
-          <div v-if="showURLBtn">
-
+          <div v-if="!showURLBtn" class="textarea-container shadow" :class="urlValidate ? 'border-sky-300 focus-within:border-sky-400 shadow-sky-50' : 'border-red-300 focus-within:border-red-400 shadow-red-50'">
+            <textarea name="bookmark url" id="bookmark-url-textarea" placeholder="请输入书签的链接地址" :class="urlValidate ? 'text-sky-600 placeholder:text-sky-200' : 'text-red-600'" v-model="bookmarkURL" @input="urlInputHandler"></textarea>
           </div>
 
+          <div v-if="showURLBtn && urlValidate && urlObj" class="p-4 space-y-4 text-sm bg-sky-50/50 rounded-md shadow shadow-sky-100">
+            <div class="flex justify-center items-center">
+              <p class="url-code-container px-1 py-0.5 flex flex-wrap justify-center items-center gap-1 text-xs font-mono">
+                <!-- host -->
+                <code>
+                  <span>{{ `${urlObj.protocol}//` }}</span>
+                  <span v-if="urlObj.username && urlObj.password">{{ `${urlObj.username}:${urlObj.password}@` }}</span>
+                  <span>{{ `${urlObj.hostname}` }}</span>
+                  <span v-if="urlObj.port">{{ `:${urlObj.port}` }}</span>
+                </code>
+                <!-- Path -->
+                <code v-if="urlObj.pathname">{{ `${urlObj.pathname}` }}</code>
+                <!-- Hash -->
+                <code v-if="urlObj.hash">{{ `${urlObj.search}` }}</code>
+              </p>
+            </div>
+            <div class="url-btn-container flex justify-center items-center gap-2 text-xs">
+              <button class="px-2.5 py-1.5 flex justify-start items-center gap-1">
+                <Iconify icon="ph:house" class="w-4 h-4"></Iconify>
+                <span>Host</span>
+              </button>
+
+              <button v-if="urlObj.pathname" class="btn text-red-500 bg-red-100 hover:bg-red-200">
+                <Iconify icon="ph:path" class="w-4 h-4"></Iconify>
+                <span>Path</span>
+              </button>
+
+              <button v-if="urlObj.search" class="btn text-red-500 bg-red-100 hover:bg-red-200">
+                <Iconify icon="ph:magnifying-glass" class="w-4 h-4"></Iconify>
+                <span>Search:</span>
+              </button>
+
+              <button v-if="urlObj.hash" class="btn text-red-500 bg-red-100 hover:bg-red-200">
+                <Iconify icon="ph:magnifying-glass" class="w-4 h-4"></Iconify>
+                <span>Hash:</span>
+                <code class="px-1 py-0.5 text-xs font-mono border border-sky-500 rounded">{{ `${urlObj.hash}` }}</code>
+              </button>
+            </div>
+
+          </div>
         </div>
       </section>
       <section>
@@ -511,7 +548,7 @@ section {
       }
     }
 
-    #bookmark-url {
+    #bookmark-url-textarea {
       &::-webkit-scrollbar-thumb {
         background-color: #bfdbfe;
       }
@@ -519,6 +556,18 @@ section {
         background-color: #60a5fa;
       }
     }
+  }
+}
+
+.url-btn-container {
+  button {
+    @apply px-2.5 py-1.5 flex justify-center items-center gap-1 rounded-md transition-colors duration-300;
+  }
+}
+
+.url-code-container {
+  code {
+    @apply px-1 py-0.5 text-sm font-mono text-sky-600 border border-sky-300 rounded;
   }
 }
 </style>
