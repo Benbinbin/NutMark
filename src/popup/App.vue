@@ -218,7 +218,7 @@ onMounted(async () => {
   // const rootTree = await chrome.bookmarks.getTree()
   // console.log('root tree', rootTree);
   await setBookmarkParameters()
-  checkURL()
+  checkURL(bookmarkURL.value)
 
   // console.log('bookmarkTitleOrigin', bookmarkTitleOrigin.value);
   // console.log('bookmarkTitle', bookmarkTitle.value);
@@ -238,7 +238,7 @@ const resetBookmarkTitle = () => {
 
 const resetBookmarkURL = () => {
   bookmarkURL.value = tabURL.value
-  checkURL()
+  checkURL(bookmarkURL.value)
 }
 
 /**
@@ -248,8 +248,8 @@ const urlObj = ref(null)
 const urlValidate = ref(true)
 const checkURL = (url) => {
   try {
-    if(bookmarkURL.value) {
-      urlObj.value = new URL(bookmarkURL.value)
+    if(url) {
+      urlObj.value = new URL(url)
       urlValidate.value = true
       console.log(urlObj.value);
     } else {
@@ -412,9 +412,12 @@ const deleteBookmark = async () => {
               <Iconify icon="ph:link-fill" class="section-title-icon"></Iconify>
               <span class="text-base font-semibold">链接</span>
             </p>
-            <div v-show="!urlValidate" class="w-fit px-1.5 py-1 flex justify-center items-center gap-1 bg-red-100 rounded-full animate-pulse">
-              <Iconify icon="fluent-emoji-flat:no-entry" class="w-4 h-4"></Iconify>
-              <span class="text-xs text-red-500">输入字符串的格式不是 URL</span>
+            <div v-show="!urlValidate" class="w-fit px-1.5 py-1 flex justify-center items-center gap-1 bg-red-100 scale-90 origin-left rounded-full">
+              <span class="relative flex h-2.5 w-2.5">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+              </span>
+              <span class="text-xs text-red-500">请输入格式正确的链接</span>
             </div>
           </div>
           <div class="flex justify-center items-center gap-2">
@@ -428,8 +431,8 @@ const deleteBookmark = async () => {
           </div>
         </div>
         <div class="space-y-2">
-          <div class="textarea-container border-sky-300 focus-within:border-sky-400 shadow shadow-sky-50">
-            <textarea name="bookmark url" id="bookmark-url" class="text-sky-600 placeholder:text-sky-200" placeholder="请输入书签的链接地址" v-model="bookmarkURL" @input="urlInputHandler"></textarea>
+          <div class="textarea-container shadow" :class="urlValidate ? 'border-sky-300 focus-within:border-sky-400 shadow-sky-50' : 'border-red-300 focus-within:border-red-400 shadow-red-50'">
+            <textarea name="bookmark url" id="bookmark-url" :class="urlValidate ? 'text-sky-600 placeholder:text-sky-200' : 'text-red-600'" placeholder="请输入书签的链接地址" v-model="bookmarkURL" @input="urlInputHandler"></textarea>
           </div>
           <div v-if="showURLBtn">
 
