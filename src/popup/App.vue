@@ -218,6 +218,7 @@ onMounted(async () => {
   // const rootTree = await chrome.bookmarks.getTree()
   // console.log('root tree', rootTree);
   await setBookmarkParameters()
+  checkURL()
 
   // console.log('bookmarkTitleOrigin', bookmarkTitleOrigin.value);
   // console.log('bookmarkTitle', bookmarkTitle.value);
@@ -237,7 +238,42 @@ const resetBookmarkTitle = () => {
 
 const resetBookmarkURL = () => {
   bookmarkURL.value = tabURL.value
+  checkURL()
 }
+
+/**
+ * bookmark url
+ */
+const urlObj = ref(null)
+const urlValidate = ref(true)
+const checkURL = (url) => {
+  try {
+    if(bookmarkURL.value) {
+      urlObj.value = new URL(bookmarkURL.value)
+      urlValidate.value = true
+      console.log(urlObj.value);
+    } else {
+      urlValidate.value = false
+    }
+  } catch (error) {
+    console.log(error);
+    urlValidate.value = false
+  }
+}
+
+let urlInputTimer = null;
+const urlInputHandler = (event) => {
+  changeHeightHandler(event)
+  if(urlInputTimer) {
+    clearTimeout(urlInputTimer)
+  }
+  urlInputTimer = setTimeout(() => {
+    checkURL(bookmarkURL.value)
+  }, 300)
+}
+
+// set url by one-click
+const showURLBtn = ref(true)
 
 /**
  * create bookmark
@@ -336,16 +372,16 @@ const deleteBookmark = async () => {
           <span class="text-xs font-bold">删除</span>
         </button>
         <button v-if="bookmarkState && (bookmarkTitleOrigin !== bookmarkTitle || bookmarkURLOrigin !== bookmarkURL || bookmarkFolderIdOrigin !== selectFolderNodeId || selectFolderType === 'new')"
-        :disabled="!bookmarkURL"
+        :disabled="!bookmarkURL || !urlValidate"
         class="group px-2 py-1.5 flex justify-center items-center gap-1 text-xs font-bold text-white bg-green-500 hover:bg-green-600 rounded transition-all duration-300"
-        :class="!bookmarkURL ? 'opacity-10' : ''"
+        :class="(!bookmarkURL || !urlValidate) ? 'opacity-10' : ''"
         @click="updateBook">
           <Iconify icon="ic:round-save" class="w-4 h-4"></Iconify>
           <span class="group-hover:hidden">有更新</span>
           <span class="w-[36px] hidden group-hover:inline-block">保存</span>
         </button>
-        <button v-if="!bookmarkState" :disabled="!bookmarkURL" class="px-2 py-1.5 flex justify-center items-center gap-1 text-xs font-bold text-white bg-green-500 hover:bg-green-600 rounded transition-all duration-300"
-        :class="!bookmarkURL ? 'opacity-10' : ''"
+        <button v-if="!bookmarkState" :disabled="!bookmarkURL || !urlValidate" class="px-2 py-1.5 flex justify-center items-center gap-1 text-xs font-bold text-white bg-green-500 hover:bg-green-600 rounded transition-all duration-300"
+        :class="(!bookmarkURL || !urlValidate) ? 'opacity-10' : ''"
         @click="createBookmark">
             <Iconify icon="ic:round-save" class="w-4 h-4"></Iconify>
             <span class="">保存</span>
@@ -354,13 +390,15 @@ const deleteBookmark = async () => {
     </header>
     <main class="px-4 pt-2 space-y-2">
       <section class="focus-within:bg-gray-50">
-        <div class="flex justify-start items-end gap-2">
-          <p class="section-title text-gray-500">
-            <Iconify icon="ph:text-aa-fill" class="section-title-icon"></Iconify>
-            <span class="text-base font-semibold">名称</span>
-          </p>
+        <div class="flex justify-between items-end">
+          <div class="flex justify-start items-end gap-2">
+            <p class="section-title text-gray-500">
+              <Iconify icon="ph:text-aa-fill" class="section-title-icon"></Iconify>
+              <span class="text-base font-semibold">名称</span>
+            </p>
+          </div>
           <button class="p-1 rounded text-gray-300 hover:text-gray-500 active:text-white hover:bg-gray-200 active:bg-gray-500 transition-colors duration-300" @click="resetBookmarkTitle">
-            <Iconify icon="ic:round-settings-backup-restore" class="w-4 h-4"></Iconify>
+            <Iconify icon="ph:arrow-counter-clockwise" class="w-4 h-4"></Iconify>
           </button>
         </div>
         <div class="textarea-container border-gray-300 focus-within:border-gray-400 shadow-sm shadow-gray-100">
@@ -368,17 +406,35 @@ const deleteBookmark = async () => {
         </div>
       </section>
       <section class="focus-within:bg-sky-50/50">
-        <div class="flex justify-start items-end gap-2">
-          <p class="section-title text-sky-500">
-            <Iconify icon="ph:link-fill" class="section-title-icon"></Iconify>
-            <span class="text-base font-semibold">链接</span>
-          </p>
-          <button class="p-1 rounded text-sky-300 hover:text-sky-500 active:text-white hover:bg-sky-200 active:bg-sky-500 transition-colors duration-300" @click="resetBookmarkURL">
-            <Iconify icon="ic:round-settings-backup-restore" class="w-4 h-4"></Iconify>
-          </button>
+        <div class="flex justify-between items-end">
+          <div class="flex justify-start items-end gap-2">
+            <p class="section-title text-sky-500">
+              <Iconify icon="ph:link-fill" class="section-title-icon"></Iconify>
+              <span class="text-base font-semibold">链接</span>
+            </p>
+            <div v-show="!urlValidate" class="w-fit px-1.5 py-1 flex justify-center items-center gap-1 bg-red-100 rounded-full animate-pulse">
+              <Iconify icon="fluent-emoji-flat:no-entry" class="w-4 h-4"></Iconify>
+              <span class="text-xs text-red-500">输入字符串的格式不是 URL</span>
+            </div>
+          </div>
+          <div class="flex justify-center items-center gap-2">
+            <button class="p-1 rounded transition-colors duration-300" :class="showURLBtn ? 'text-white bg-yellow-400 hover:bg-yellow-300' : 'text-yellow-300 hover:text-yellow-400 hover:bg-yellow-100'"
+            @click="showURLBtn = !showURLBtn">
+              <Iconify icon="ph:lightbulb-fill" class="w-4 h-4"></Iconify>
+            </button>
+            <button class="p-1 rounded text-sky-200 hover:text-sky-500 active:text-white hover:bg-sky-100 active:bg-sky-500 transition-colors duration-300" @click="resetBookmarkURL">
+              <Iconify icon="ph:arrow-counter-clockwise" class="w-4 h-4"></Iconify>
+            </button>
+          </div>
         </div>
-        <div class="textarea-container border-sky-300 focus-within:border-sky-400 shadow shadow-sky-50">
-          <textarea name="bookmark url" id="bookmark-url" class="text-sky-600 placeholder:text-sky-200" placeholder="请输入书签的链接地址" v-model="bookmarkURL" @input="changeHeightHandler"></textarea>
+        <div class="space-y-2">
+          <div class="textarea-container border-sky-300 focus-within:border-sky-400 shadow shadow-sky-50">
+            <textarea name="bookmark url" id="bookmark-url" class="text-sky-600 placeholder:text-sky-200" placeholder="请输入书签的链接地址" v-model="bookmarkURL" @input="urlInputHandler"></textarea>
+          </div>
+          <div v-if="showURLBtn">
+
+          </div>
+
         </div>
       </section>
       <section>
