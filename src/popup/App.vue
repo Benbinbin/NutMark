@@ -6,10 +6,29 @@ import { Icon as Iconify } from '@iconify/vue'
 import FolderGrid from './components/FolderGrid.vue'
 
 /**
+ * tab information
+ */
+const tabTitle = ref('')
+const tabURL = ref('')
+const getTabInfo = async () => {
+  // get current tab
+  const [tab] = await chrome.tabs.query({
+    active: true,
+    currentWindow: true,
+  });
+
+  tabTitle.value = tab.title
+  tabURL.value = tab.url || tab.pendingUrl
+}
+
+/**
  * bookmark information
  */
 const bookmarkState = ref(false)
 const bookmarkId = ref(null)
+const bookmarkTitleOrigin = ref('')
+const bookmarkURLOrigin = ref('')
+const bookmarkFolderIdOrigin = ref('')
 const bookmarkTitle = ref('')
 const bookmarkURL = ref('')
 
@@ -111,27 +130,12 @@ const setNewFolder = (newFolderObj) => {
 provide('newFolder', newFolder)
 provide('setNewFolder', setNewFolder)
 
-/**
- * get init information
- */
-const getTabInfo = async () => {
-  // get current tab
-  const [tab] = await chrome.tabs.query({
-    active: true,
-    currentWindow: true,
-  });
 
-  return {
-    tabTitle: tab.title,
-    tabUrl: tab.url || tab.pendingUrl
-  }
-}
-
-// get the folder and node tree id of the given bookmark node
+// get the node tree id of the folder
 // with fallback solution to the root node and 「书签栏」
-const getFolderIdAndTreeId = async (bookmarkNode) => {
+const getTreeId = async (folderId) => {
   // get the folder for this bookmark node
-  const resultForFolderNode = await chrome.bookmarks.get(bookmarkNode.parentId)
+  const resultForFolderNode = await chrome.bookmarks.get(folderId)
   const folderNode = resultForFolderNode[0]
 
   // get the node tree
@@ -146,41 +150,43 @@ const getFolderIdAndTreeId = async (bookmarkNode) => {
     targetId = folderNode.id
   }
 
-  return {
-    folderId: bookmarkNode.parentId,
-    treeId: targetId
-  }
+  return targetId
 }
 
+/**
+ * set the parameters about bookmark
+ * get from tab or recent created bookmark information
+ */
 const setBookmarkParameters = async () => {
-  const { tabTitle, tabUrl } = await getTabInfo()
-
-  bookmarkTitle.value = tabTitle;
-  bookmarkURL.value = tabUrl;
+  await getTabInfo()
 
   // check the url bookmark state
-  const result = await useCheckBookmarkState(bookmarkURL.value);
+  const result = await useCheckBookmarkState(tabURL.value);
   // console.log(result);
-  if (result) {
-    bookmarkId.value = result.id
-    bookmarkState.value = true
-  } else {
-    bookmarkState.value = false
-  }
 
-  if (bookmarkState.value) {
-    // if the url already bookmarked
-    const resultForBookmarkNode = await chrome.bookmarks.search({
-      url: bookmarkURL.value
-    });
-    // get the bookmark node
-    const bookmarkNode = resultForBookmarkNode[0]
-    // set the selected folder and node tree
-    const result = await getFolderIdAndTreeId(bookmarkNode)
-    selectFolderNodeId.value = result.folderId
-    nodeTreeId.value = result.treeId
+  if (result) {
+    // if the tab has already bookmarked
+    bookmarkState.value = true
+
+    bookmarkId.value = result.id
+
+    bookmarkTitle.value = result.title
+    bookmarkTitleOrigin.value = result.title
+
+    bookmarkURL.value = result.url
+    bookmarkURLOrigin.value = result.url
+
+    selectFolderNodeId.value = result.parentId
+    bookmarkFolderIdOrigin.value = result.parentId
+
+    // set the node tree id
+    nodeTreeId.value = await getTreeId(result.parentId)
   } else {
-    // if the url doesn't bookmark
+    // if the tab doesn't bookmark
+    bookmarkState.value = false
+    bookmarkTitle.value = tabTitle.value;
+    bookmarkURL.value = tabURL.value;
+
     // get recent bookmark to build node tree
     const recentBookmarkArr = await chrome.bookmarks.getRecent(1)
     // console.log('get recent bookmarks', recentBookmarkArr);
@@ -188,9 +194,8 @@ const setBookmarkParameters = async () => {
     if (recentBookmarkArr.length > 0) {
       // if there is a bookmark created recently
       const recentBookmark = recentBookmarkArr[0]
-      const result = await getFolderIdAndTreeId(recentBookmark)
-      selectFolderNodeId.value = result.folderId
-      nodeTreeId.value = result.treeId
+      selectFolderNodeId.value = recentBookmark.parentId
+      nodeTreeId.value = await getTreeId(recentBookmark.parentId)
     } else {
       // if there isn't any bookmarks created recently
       // (when this is a brand new browser)
@@ -201,29 +206,50 @@ const setBookmarkParameters = async () => {
       selectFolderNodeId.value = '1'
     }
   }
+
   // console.log('select folder node', selectFolderNode.value);
   // console.log('node tree', nodeTree.value);
 }
 
-// init the state
+/**
+ * get init information
+ */
 onMounted(async () => {
   // const rootTree = await chrome.bookmarks.getTree()
   // console.log('root tree', rootTree);
   await setBookmarkParameters()
 
+  // console.log('bookmarkTitleOrigin', bookmarkTitleOrigin.value);
+  // console.log('bookmarkTitle', bookmarkTitle.value);
+  // console.log('bookmarkURLOrigin', bookmarkURLOrigin.value);
+  // console.log('bookmarkURL', bookmarkURL.value);
+  // console.log('bookmarkFolderIdOrigin', bookmarkFolderIdOrigin.value);
+  // console.log(selectFolderType.value);
+  // console.log('selectFolderNodeId', selectFolderNodeId.value);
 })
+
+/**
+ * reset the bookmark title or url based on tab
+ */
+const resetBookmarkTitle = () => {
+  bookmarkTitle.value = tabTitle.value
+}
+
+const resetBookmarkURL = () => {
+  bookmarkURL.value = tabURL.value
+}
 
 /**
  * create bookmark
  */
 const createBookmark = async () => {
   let folderNodeId;
-  if(selectFolderType.value === 'old') {
-    folderNodeId = selectFolderNodeId.value
-  } else if (selectFolderType.value === 'new') {
+  if (selectFolderType.value === 'new') {
     // console.log(newFolder.value);
     const folderNode = await chrome.bookmarks.create(newFolder.value)
     folderNodeId = folderNode.id
+  } else{
+    folderNodeId = selectFolderNodeId.value
   }
 
   await chrome.bookmarks.create({
@@ -231,6 +257,48 @@ const createBookmark = async () => {
     title: bookmarkTitle.value,
     url: bookmarkURL.value
   })
+
+  // close the popup page when finish
+  window.close()
+}
+
+/**
+ * update bookmark
+ */
+const updateBook = async () => {
+  // if change the folder
+  // first move the bookmark to the folder
+  if(bookmarkFolderIdOrigin.value !== selectFolderNodeId.value || selectFolderType.value === 'new') {
+    let folderNodeId;
+    if(selectFolderType.value === 'new') {
+      // create the new folder first
+      const folderNode = await chrome.bookmarks.create(newFolder.value)
+      folderNodeId = folderNode.id
+    } else {
+      fonderNodeId = selectFolderNodeId.value
+    }
+    // then move the bookmark to the folder
+    const bookmarkNode = await chrome.bookmarks.move(
+      bookmarkId.value,
+      {
+        parentId: folderNodeId
+      }
+    )
+
+    console.log(bookmarkNode);
+    console.log(bookmarkId.value);
+  }
+
+  // then update the bookmark content
+  if(bookmarkTitleOrigin.value !== bookmarkTitle.value || bookmarkURLOrigin.value !== bookmarkURL.value) {
+    await chrome.bookmarks.update(
+      bookmarkId.value,
+      {
+        title: bookmarkTitle.value,
+        url: bookmarkURL.value
+      }
+    )
+  }
 
   // close the popup page when finish
   window.close()
@@ -255,41 +323,60 @@ const deleteBookmark = async () => {
 
 <template>
   <div>
-    <header class="px-4 py-2.5 flex justify-between sticky top-0 inset-x-0 bg-gray-50 border-b shadow">
-      <div class="flex justify-center items-center gap-2">
-        <img v-if="bookmarkURL" :src="useGetFaviconURL(bookmarkURL)" alt="bookmark icon" class="w-6 h-6">
-        <Iconify v-else icon="ph:planet-fill" class="inline-block w-6 h-6 text-green-500"></Iconify>
+    <header class="px-2 py-2 flex justify-between sticky top-0 inset-x-0 bg-gray-50 border-b shadow">
+      <div class="px-3 py-1 flex justify-center items-center gap-1 border rounded-full transition-colors duration-300"
+      :class="bookmarkState ? 'bg-amber-100/60 hover:bg-amber-200 border-amber-200 text-amber-500 hover:text-amber-600' : 'bg-emerald-100/60 hover:bg-emerald-200 text-emerald-500 border-emerald-200 hover:text-emerald-600'">
+        <!-- <img v-if="bookmarkURL" :src="useGetFaviconURL(bookmarkURL)" alt="bookmark icon" class="w-6 h-6"> -->
+        <Iconify icon="ph:planet-fill" class="w-4 h-4 text-purple-500"></Iconify>
+        <span class="text-xs font-bold">{{ bookmarkState ? '已收藏' : '未收藏' }}</span>
       </div>
       <div class="flex justify-center items-center gap-2">
-        <button v-if="bookmarkState" class="group px-2 py-1 flex justify-center items-center gap-1 text-xs font-bold text-amber-500 hover:text-white bg-transparent hover:bg-red-500 border-amber-500 hover:border-red-500 border-2 rounded transition-colors duration-300" @click="showDeleteBookmarkPrompt=true">
-          <img src="@/assets/nut-mark.svg" alt="nut mark icon" class="w-4 h-4">
-          <span class="inline -block group-hover:hidden">已收藏</span>
-          <span class="w-[36px] hidden group-hover:inline-block">删除</span>
+        <button v-if="bookmarkState" class="px-2 py-1.5 flex justify-center items-center gap-1 text-white bg-red-500 hover:bg-red-600 rounded transition-colors duration-300" @click="showDeleteBookmarkPrompt=true">
+          <Iconify icon="ic:round-delete" class="w-4 h-4"></Iconify>
+          <span class="text-xs font-bold">删除</span>
         </button>
-        <button v-if="!bookmarkState" :disabled="!bookmarkURL" class="group px-2 py-1 flex justify-center items-center gap-1 text-xs font-bold text-emerald-500 hover:text-white bg-transparent hover:bg-emerald-500 border-emerald-500  border-2 rounded transition-colors duration-300"
-        :class="!bookmarkURL ? 'hover:opacity-10' : ''"
+        <button v-if="bookmarkState && (bookmarkTitleOrigin !== bookmarkTitle || bookmarkURLOrigin !== bookmarkURL || bookmarkFolderIdOrigin !== selectFolderNodeId || selectFolderType === 'new')"
+        :disabled="!bookmarkURL"
+        class="group px-2 py-1.5 flex justify-center items-center gap-1 text-xs font-bold text-white bg-green-500 hover:bg-green-600 rounded transition-all duration-300"
+        :class="!bookmarkURL ? 'opacity-10' : ''"
+        @click="updateBook">
+          <Iconify icon="ic:round-save" class="w-4 h-4"></Iconify>
+          <span class="group-hover:hidden">有更新</span>
+          <span class="w-[36px] hidden group-hover:inline-block">保存</span>
+        </button>
+        <button v-if="!bookmarkState" :disabled="!bookmarkURL" class="px-2 py-1.5 flex justify-center items-center gap-1 text-xs font-bold text-white bg-green-500 hover:bg-green-600 rounded transition-all duration-300"
+        :class="!bookmarkURL ? 'opacity-10' : ''"
         @click="createBookmark">
-            <img src="@/assets/nut-unmark.svg" alt="nut unmark icon" class="w-4 h-4">
-            <span class="inline-block group-hover:hidden">未收藏</span>
-            <span class="w-[36px] hidden group-hover:inline-block">添加</span>
-          </button>
+            <Iconify icon="ic:round-save" class="w-4 h-4"></Iconify>
+            <span class="">保存</span>
+        </button>
       </div>
     </header>
     <main class="px-4 pt-2 space-y-2">
-      <section class=" focus-within:bg-gray-50">
-        <p class="section-title text-gray-500">
-          <Iconify icon="ph:text-aa-fill" class="section-title-icon"></Iconify>
-          <span class="text-base font-semibold">名称</span>
-        </p>
+      <section class="focus-within:bg-gray-50">
+        <div class="flex justify-start items-end gap-2">
+          <p class="section-title text-gray-500">
+            <Iconify icon="ph:text-aa-fill" class="section-title-icon"></Iconify>
+            <span class="text-base font-semibold">名称</span>
+          </p>
+          <button class="p-1 rounded text-gray-300 hover:text-gray-500 active:text-white hover:bg-gray-200 active:bg-gray-500 transition-colors duration-300" @click="resetBookmarkTitle">
+            <Iconify icon="ic:round-settings-backup-restore" class="w-4 h-4"></Iconify>
+          </button>
+        </div>
         <div class="textarea-container border-gray-300 focus-within:border-gray-400 shadow-sm shadow-gray-100">
           <textarea name="bookmark name" id="bookmark-name" class="text-gray-700 placeholder:text-gray-300" placeholder="请输入书签的名称" v-model="bookmarkTitle" @input="changeHeightHandler"></textarea>
         </div>
       </section>
       <section class="focus-within:bg-sky-50/50">
-        <p class="section-title text-sky-500">
-          <Iconify icon="ph:link-fill" class="section-title-icon"></Iconify>
-          <span class="text-base font-semibold">链接</span>
-        </p>
+        <div class="flex justify-start items-end gap-2">
+          <p class="section-title text-sky-500">
+            <Iconify icon="ph:link-fill" class="section-title-icon"></Iconify>
+            <span class="text-base font-semibold">链接</span>
+          </p>
+          <button class="p-1 rounded text-sky-300 hover:text-sky-500 active:text-white hover:bg-sky-200 active:bg-sky-500 transition-colors duration-300" @click="resetBookmarkURL">
+            <Iconify icon="ic:round-settings-backup-restore" class="w-4 h-4"></Iconify>
+          </button>
+        </div>
         <div class="textarea-container border-sky-300 focus-within:border-sky-400 shadow shadow-sky-50">
           <textarea name="bookmark url" id="bookmark-url" class="text-sky-600 placeholder:text-sky-200" placeholder="请输入书签的链接地址" v-model="bookmarkURL" @input="changeHeightHandler"></textarea>
         </div>
