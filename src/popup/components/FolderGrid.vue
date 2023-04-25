@@ -53,7 +53,7 @@ const setNewFolderHandler = () => {
 </script>
 
 <template>
-  <div>
+  <div class="rounded-md shadow shadow-orange-100">
     <!-- grid header -->
     <div class="px-2 py-1.5 flex justify-between items-start gap-4 bg-orange-50/50 border-b border-orange-200 rounded-t-md shadow shadow-orange-50">
       <div class="grow flex justify-start items-start">
@@ -82,7 +82,7 @@ const setNewFolderHandler = () => {
       </div>
     </div>
     <!-- nodes grid -->
-    <div class="grid-container w-full max-h-[500px] overflow-y-auto px-4 py-6 grid grid-cols-4 gap-2 grid-flow-row-dense justify-items-start">
+    <div class="grid-container w-full max-h-[500px] overflow-y-auto px-4 py-6 grid grid-cols-4 gap-2 grid-flow-row-dense justify-items-start rounded-b-md">
       <!-- new folder -->
       <div v-if="selectFolderType === 'new' && newFolder && newFolder.parentId === nodeTreeId" class="w-full h-fit px-1.5 py-1 flex justify-center items-center gap-1 text-white bg-purple-500 hover:bg-purple-600 rounded" >
         <Iconify icon="ph:folder-dashed" class="shrink-0 w-5 h-5" ></Iconify>

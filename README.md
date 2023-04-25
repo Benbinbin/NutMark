@@ -14,7 +14,7 @@ Nut Mark focus on the following features to make bookmarking step more smoothly 
 
 :sparkles: Quick search to find the folder to hold the bookmark
 
-Bonus features in plan
+Bonus features in plan (maybe)
 
 :balloon: Manage bookmarks with a user-friendly interface
 
