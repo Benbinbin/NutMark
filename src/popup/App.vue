@@ -1,9 +1,10 @@
 <script setup>
-import { onMounted, ref, watch, provide, nextTick } from 'vue';
+import { onMounted, ref, watch, provide } from 'vue';
 import { useCheckBookmarkState } from '@/composables/checkBookmarkState'
 import { useGetFaviconURL } from '@/composables/getFaviconURL'
 import { Icon as Iconify } from '@iconify/vue'
 import FolderGrid from './components/FolderGrid.vue'
+import SearchFolder from './components/SearchFolder.vue'
 
 /**
  * tab information
@@ -40,6 +41,89 @@ const changeHeightHandler = (event) => {
   event.target.style.height = 'auto'
   event.target.style.height = `${event.target.scrollHeight}px`
 }
+
+/**
+ * reset the bookmark title or url based on tab
+ */
+const resetBookmarkTitle = () => {
+  bookmarkTitle.value = tabTitle.value
+}
+
+const resetBookmarkURL = () => {
+  bookmarkURL.value = tabURL.value
+  validateURL(bookmarkURL.value)
+}
+
+/**
+ * bookmark url
+ */
+const urlObj = ref(null)
+const urlValidation = ref(false)
+const validateURL = (url) => {
+  try {
+    if(url) {
+      urlObj.value = new URL(url)
+      urlValidation.value = true
+    } else {
+      urlValidation.value = false
+    }
+  } catch (error) {
+    console.log(error);
+    urlValidation.value = false
+  }
+}
+
+let urlInputTimer = null;
+const urlInputHandler = (event) => {
+  changeHeightHandler(event)
+  if(urlInputTimer) {
+    clearTimeout(urlInputTimer)
+  }
+  urlInputTimer = setTimeout(() => {
+    validateURL(bookmarkURL.value)
+  }, 300)
+}
+
+// set bookmark url by one-click
+const showURLBtn = ref(false)
+const setShowURLBtnHandler = async () => {
+  showURLBtn.value = !showURLBtn.value
+  await chrome.storage.local.set({ showURLBtn: showURLBtn.value })
+}
+
+const hoverTarget = ref('')
+
+const setBookmarkURL = (target) => {
+  if(!urlObj.value)return
+  const protocol = `${urlObj.value.protocol}//`
+  const userInfo = (urlObj.value.username && urlObj.value.password) ? `${urlObj.value.username}:${urlObj.value.password}@`: ''
+  const hostname = urlObj.value.hostname
+  const port = urlObj.value.port ? `:${urlObj.value.port}` : ''
+  const path = urlObj.value.pathname ? urlObj.value.pathname : ''
+  const search = urlObj.value.search ? urlObj.value.search : ''
+
+  switch (target) {
+    case 'path':
+      bookmarkURL.value = protocol + userInfo + hostname + port
+      break;
+    case 'search':
+      bookmarkURL.value = protocol + userInfo + hostname + port + path
+      break;
+    case 'hash':
+      bookmarkURL.value = protocol + userInfo + hostname + port + path + search
+      break;
+    default:
+      break;
+  }
+
+  validateURL(bookmarkURL.value)
+}
+
+/**
+ * search folder
+ */
+const showFolderSearch = ref(true)
+
 
 /**
  * node tree
@@ -223,83 +307,6 @@ onMounted(async () => {
 })
 
 /**
- * reset the bookmark title or url based on tab
- */
-const resetBookmarkTitle = () => {
-  bookmarkTitle.value = tabTitle.value
-}
-
-const resetBookmarkURL = () => {
-  bookmarkURL.value = tabURL.value
-  validateURL(bookmarkURL.value)
-}
-
-/**
- * bookmark url
- */
-const urlObj = ref(null)
-const urlValidation = ref(false)
-const validateURL = (url) => {
-  try {
-    if(url) {
-      urlObj.value = new URL(url)
-      urlValidation.value = true
-    } else {
-      urlValidation.value = false
-    }
-  } catch (error) {
-    console.log(error);
-    urlValidation.value = false
-  }
-}
-
-let urlInputTimer = null;
-const urlInputHandler = (event) => {
-  changeHeightHandler(event)
-  if(urlInputTimer) {
-    clearTimeout(urlInputTimer)
-  }
-  urlInputTimer = setTimeout(() => {
-    validateURL(bookmarkURL.value)
-  }, 300)
-}
-
-// set bookmark url by one-click
-const showURLBtn = ref(false)
-const setShowURLBtnHandler = async () => {
-  showURLBtn.value = !showURLBtn.value
-  await chrome.storage.local.set({ showURLBtn: showURLBtn.value })
-}
-
-const hoverTarget = ref('')
-
-const setBookmarkURL = (target) => {
-  if(!urlObj.value)return
-  const protocol = `${urlObj.value.protocol}//`
-  const userInfo = (urlObj.value.username && urlObj.value.password) ? `${urlObj.value.username}:${urlObj.value.password}@`: ''
-  const hostname = urlObj.value.hostname
-  const port = urlObj.value.port ? `:${urlObj.value.port}` : ''
-  const path = urlObj.value.pathname ? urlObj.value.pathname : ''
-  const search = urlObj.value.search ? urlObj.value.search : ''
-
-  switch (target) {
-    case 'path':
-      bookmarkURL.value = protocol + userInfo + hostname + port
-      break;
-    case 'search':
-      bookmarkURL.value = protocol + userInfo + hostname + port + path
-      break;
-    case 'hash':
-      bookmarkURL.value = protocol + userInfo + hostname + port + path + search
-      break;
-    default:
-      break;
-  }
-
-  validateURL(bookmarkURL.value)
-}
-
-/**
  * create bookmark
  */
 const createBookmark = async () => {
@@ -382,8 +389,8 @@ const deleteBookmark = async () => {
     <header class="px-2 py-2 flex justify-between sticky top-0 inset-x-0 bg-gray-50 border-b shadow">
       <div class="px-3 py-1 flex justify-center items-center gap-1 border rounded-full transition-colors duration-300"
       :class="bookmarkState ? 'bg-amber-100/60 hover:bg-amber-200 border-amber-200 text-amber-500 hover:text-amber-600' : 'bg-emerald-100/60 hover:bg-emerald-200 text-emerald-500 border-emerald-200 hover:text-emerald-600'">
-        <!-- <img v-if="bookmarkURL" :src="useGetFaviconURL(bookmarkURL)" alt="bookmark icon" class="w-6 h-6"> -->
-        <Iconify icon="ph:planet-fill" class="w-4 h-4 text-purple-500"></Iconify>
+        <img v-if="bookmarkURL" :src="useGetFaviconURL(bookmarkURL)" alt="bookmark icon" class="w-6 h-6">
+        <Iconify v-else icon="ph:planet-fill" class="w-4 h-4 text-purple-500"></Iconify>
         <span class="text-xs font-bold">{{ bookmarkState ? '已收藏' : '未收藏' }}</span>
       </div>
       <div class="flex justify-center items-center gap-2">
@@ -409,6 +416,7 @@ const deleteBookmark = async () => {
       </div>
     </header>
     <main class="px-4 pt-2 space-y-2">
+      <!-- bookmark title section -->
       <section class="focus-within:bg-gray-50">
         <div class="flex justify-between items-end">
           <div class="flex justify-start items-end gap-2">
@@ -425,6 +433,7 @@ const deleteBookmark = async () => {
           <textarea name="bookmark name" id="bookmark-name" class="text-gray-700 placeholder:text-gray-300" placeholder="请输入书签的名称" v-model="bookmarkTitle" @input="changeHeightHandler"></textarea>
         </div>
       </section>
+      <!-- bookmark url section -->
       <section :class="urlValidation ? (showURLBtn ? '' : 'focus-within:bg-sky-50/50') : 'focus-within:bg-red-50/50'">
         <div class="flex justify-between items-end">
           <div class="flex justify-start items-end gap-2">
@@ -506,6 +515,7 @@ const deleteBookmark = async () => {
           </div>
         </div>
       </section>
+      <!-- bookmark folder section -->
       <section>
         <div class="flex justify-between items-center">
           <div class="flex justify-start items-center gap-4">
@@ -523,12 +533,15 @@ const deleteBookmark = async () => {
               <sup class="px-2 py-0.5 flex justify-center absolute -top-2 -right-4 text-xs text-white bg-red-400 rounded-full scale-[0.8] rotate-45 select-none">new</sup>
             </div>
           </div>
-          <button class="p-1.5 text-orange-400 hover:text-white hover:bg-orange-400 rounded transition-colors duration-300">
+          <button class="p-1.5 rounded transition-colors duration-300"
+          :class="showFolderSearch ? 'text-white bg-orange-400 hover:bg-orange-300' : 'text-orange-400 hover:text-orange-500 hover:bg-orange-100'"
+          @click="showFolderSearch = !showFolderSearch">
             <Iconify icon="ph:magnifying-glass" class="w-4 h-4"></Iconify>
           </button>
         </div>
         <div class="w-full">
-          <FolderGrid v-if="nodeTree" :folder-path="folderPath" :nodes="nodeTree.children"></FolderGrid>
+          <FolderGrid v-if="nodeTree" v-show="!showFolderSearch" :folder-path="folderPath" :nodes="nodeTree.children"></FolderGrid>
+          <SearchFolder v-if="showFolderSearch"></SearchFolder>
         </div>
       </section>
     </main>
