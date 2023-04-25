@@ -275,6 +275,11 @@ const urlInputHandler = (event) => {
 // set url by one-click
 const showURLBtn = ref(true)
 
+const hoverTarget = ref('')
+// const setHoverHandler = () => {
+//   hoverTarget
+// }
+
 /**
  * create bookmark
  */
@@ -431,49 +436,57 @@ const deleteBookmark = async () => {
           </div>
         </div>
         <div class="space-y-2">
-          <div v-if="!showURLBtn" class="textarea-container shadow" :class="urlValidate ? 'border-sky-300 focus-within:border-sky-400 shadow-sky-50' : 'border-red-300 focus-within:border-red-400 shadow-red-50'">
+          <div v-if="!showURLBtn || !urlValidate || !bookmarkURL" class="textarea-container shadow" :class="urlValidate ? 'border-sky-300 focus-within:border-sky-400 shadow-sky-50' : 'border-red-300 focus-within:border-red-400 shadow-red-50'">
             <textarea name="bookmark url" id="bookmark-url-textarea" placeholder="请输入书签的链接地址" :class="urlValidate ? 'text-sky-600 placeholder:text-sky-200' : 'text-red-600'" v-model="bookmarkURL" @input="urlInputHandler"></textarea>
           </div>
 
-          <div v-if="showURLBtn && urlValidate && urlObj" class="p-4 space-y-4 text-sm bg-sky-50/50 rounded-md shadow shadow-sky-100">
-            <div class="flex justify-center items-center">
-              <p class="url-code-container px-1 py-0.5 flex flex-wrap justify-center items-center gap-1 text-xs font-mono">
-                <!-- host -->
-                <code>
-                  <span>{{ `${urlObj.protocol}//` }}</span>
-                  <span v-if="urlObj.username && urlObj.password">{{ `${urlObj.username}:${urlObj.password}@` }}</span>
-                  <span>{{ `${urlObj.hostname}` }}</span>
-                  <span v-if="urlObj.port">{{ `:${urlObj.port}` }}</span>
-                </code>
-                <!-- Path -->
-                <code v-if="urlObj.pathname">{{ `${urlObj.pathname}` }}</code>
-                <!-- Hash -->
-                <code v-if="urlObj.hash">{{ `${urlObj.search}` }}</code>
-              </p>
-            </div>
-            <div class="url-btn-container flex justify-center items-center gap-2 text-xs">
-              <button class="px-2.5 py-1.5 flex justify-start items-center gap-1">
+          <div v-if="showURLBtn && urlValidate && urlObj" class="p-4 space-y-4 text-sm rounded-md shadow shadow-sky-200">
+            <div class="url-btn-container flex justify-center items-center gap-3 text-xs">
+              <button class="text-sky-600 hover:text-white bg-sky-100 hover:bg-sky-500" @mouseover="hoverTarget='host'" @mouseout="hoverTarget=''">
                 <Iconify icon="ph:house" class="w-4 h-4"></Iconify>
                 <span>Host</span>
               </button>
 
-              <button v-if="urlObj.pathname" class="btn text-red-500 bg-red-100 hover:bg-red-200">
-                <Iconify icon="ph:path" class="w-4 h-4"></Iconify>
+              <button v-if="urlObj.pathname" class="group text-red-500 hover:text-white bg-red-100 hover:bg-red-500" @mouseover="hoverTarget='path'" @mouseout="hoverTarget=''">
+                <Iconify icon="ph:broom" class="hidden group-hover:inline-block w-4 h-4"></Iconify>
+                <Iconify icon="ph:path" class="group-hover:hidden w-4 h-4"></Iconify>
                 <span>Path</span>
               </button>
 
-              <button v-if="urlObj.search" class="btn text-red-500 bg-red-100 hover:bg-red-200">
-                <Iconify icon="ph:magnifying-glass" class="w-4 h-4"></Iconify>
-                <span>Search:</span>
+              <button v-if="urlObj.search" class="group text-red-500 hover:text-white bg-red-100 hover:bg-red-500" @mouseover="hoverTarget='search'" @mouseout="hoverTarget=''">
+                <Iconify icon="ph:broom" class="hidden group-hover:inline-block w-4 h-4"></Iconify>
+                <Iconify icon="ph:magnifying-glass" class="group-hover:hidden w-4 h-4"></Iconify>
+                <span>Search</span>
               </button>
 
-              <button v-if="urlObj.hash" class="btn text-red-500 bg-red-100 hover:bg-red-200">
-                <Iconify icon="ph:magnifying-glass" class="w-4 h-4"></Iconify>
-                <span>Hash:</span>
-                <code class="px-1 py-0.5 text-xs font-mono border border-sky-500 rounded">{{ `${urlObj.hash}` }}</code>
+              <button v-if="urlObj.hash" class="group text-red-500 hover:text-white bg-red-100 hover:bg-red-500" @mouseover="hoverTarget='hash'" @mouseout="hoverTarget=''">
+                <Iconify icon="ph:broom" class="hidden group-hover:inline-block w-4 h-4"></Iconify>
+                <Iconify icon="ph:hash" class="group-hover:hidden w-4 h-4"></Iconify>
+                <span>Hash</span>
               </button>
             </div>
+            <div class="flex justify-center items-center">
+              <p class="url-code-container px-1 py-0.5 flex justify-center items-center">
+                <code class="flex flex-wrap justify-center items-center gap-1 text-xs font-mono">
+                  <!-- host -->
+                  <span class="code-snippet flex flex-wrap justify-center items-center text-sky-600 border-sky-300" :class="hoverTarget === 'host' ? 'bg-sky-100' : ''">
+                    <span>{{ `${urlObj.protocol}//` }}</span>
+                    <span v-if="urlObj.username && urlObj.password">{{ `${urlObj.username}:${urlObj.password}@` }}</span>
+                    <span>{{ `${urlObj.hostname}` }}</span>
+                    <span v-if="urlObj.port">{{ `:${urlObj.port}` }}</span>
+                  </span>
 
+                  <!-- Path -->
+                  <span v-if="urlObj.pathname" class="code-snippet" :class="hoverTarget === 'path' ? 'text-red-600 line-through decoration-2 bg-red-100 border-red-300' : 'text-sky-600 border-sky-300'">{{ `${urlObj.pathname}` }}</span>
+
+                  <!-- Search -->
+                  <span v-if="urlObj.search" class="code-snippet" :class="(hoverTarget === 'path' || hoverTarget === 'search') ? 'text-red-600 line-through decoration-2 bg-red-100 border-red-300' : 'text-sky-600 border-sky-300'">{{ `${urlObj.search}` }}</span>
+
+                  <!-- Hash -->
+                  <span v-if="urlObj.hash" class="code-snippet" :class="(hoverTarget === 'path' || hoverTarget === 'search' || hoverTarget === 'hash') ? 'text-red-600 line-through decoration-2 bg-red-100 border-red-300' : 'text-sky-600 border-sky-300'">{{ `${urlObj.hash}` }}</span>
+                </code>
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -566,8 +579,8 @@ section {
 }
 
 .url-code-container {
-  code {
-    @apply px-1 py-0.5 text-sm font-mono text-sky-600 border border-sky-300 rounded;
+  .code-snippet {
+    @apply px-1 py-0.5 text-sm font-mono border rounded transition-colors duration-300;
   }
 }
 </style>
