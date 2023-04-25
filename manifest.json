@@ -6,7 +6,8 @@
   "permissions": [
     "bookmarks",
     "tabs",
-    "favicon"
+    "favicon",
+    "storage"
   ],
   "background": {
     "service_worker": "src/background/main.js",

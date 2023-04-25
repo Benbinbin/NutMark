@@ -162,7 +162,6 @@ const setBookmarkParameters = async () => {
 
   // check the url bookmark state
   const result = await useCheckBookmarkState(tabURL.value);
-  // console.log(result);
 
   if (result) {
     // if the tab has already bookmarked
@@ -189,7 +188,6 @@ const setBookmarkParameters = async () => {
 
     // get recent bookmark to build node tree
     const recentBookmarkArr = await chrome.bookmarks.getRecent(1)
-    // console.log('get recent bookmarks', recentBookmarkArr);
 
     if (recentBookmarkArr.length > 0) {
       // if there is a bookmark created recently
@@ -206,27 +204,22 @@ const setBookmarkParameters = async () => {
       selectFolderNodeId.value = '1'
     }
   }
-
-  // console.log('select folder node', selectFolderNode.value);
-  // console.log('node tree', nodeTree.value);
 }
 
 /**
  * get init information
  */
 onMounted(async () => {
-  // const rootTree = await chrome.bookmarks.getTree()
-  // console.log('root tree', rootTree);
   await setBookmarkParameters()
   validateURL(bookmarkURL.value)
-
-  // console.log('bookmarkTitleOrigin', bookmarkTitleOrigin.value);
-  // console.log('bookmarkTitle', bookmarkTitle.value);
-  // console.log('bookmarkURLOrigin', bookmarkURLOrigin.value);
-  // console.log('bookmarkURL', bookmarkURL.value);
-  // console.log('bookmarkFolderIdOrigin', bookmarkFolderIdOrigin.value);
-  // console.log(selectFolderType.value);
-  // console.log('selectFolderNodeId', selectFolderNodeId.value);
+  if(urlValidation.value) {
+    const result = await chrome.storage.local.get(["showURLBtn"])
+    if(result.showURLBtn) {
+      showURLBtn.value = result.showURLBtn
+    } else {
+      await chrome.storage.local.set({ showURLBtn: false })
+    }
+  }
 })
 
 /**
@@ -245,13 +238,12 @@ const resetBookmarkURL = () => {
  * bookmark url
  */
 const urlObj = ref(null)
-const urlValidation = ref(true)
+const urlValidation = ref(false)
 const validateURL = (url) => {
   try {
     if(url) {
       urlObj.value = new URL(url)
       urlValidation.value = true
-      console.log(urlObj.value);
     } else {
       urlValidation.value = false
     }
@@ -273,7 +265,11 @@ const urlInputHandler = (event) => {
 }
 
 // set bookmark url by one-click
-const showURLBtn = ref(true)
+const showURLBtn = ref(false)
+const setShowURLBtnHandler = async () => {
+  showURLBtn.value = !showURLBtn.value
+  await chrome.storage.local.set({ showURLBtn: showURLBtn.value })
+}
 
 const hoverTarget = ref('')
 
@@ -285,15 +281,6 @@ const setBookmarkURL = (target) => {
   const port = urlObj.value.port ? `:${urlObj.value.port}` : ''
   const path = urlObj.value.pathname ? urlObj.value.pathname : ''
   const search = urlObj.value.search ? urlObj.value.search : ''
-
-  console.log({
-    protocol,
-    userInfo,
-    hostname,
-    port,
-    path,
-    search
-  });
 
   switch (target) {
     case 'path':
@@ -318,7 +305,6 @@ const setBookmarkURL = (target) => {
 const createBookmark = async () => {
   let folderNodeId;
   if (selectFolderType.value === 'new') {
-    // console.log(newFolder.value);
     const folderNode = await chrome.bookmarks.create(newFolder.value)
     folderNodeId = folderNode.id
   } else{
@@ -357,9 +343,6 @@ const updateBook = async () => {
         parentId: folderNodeId
       }
     )
-
-    console.log(bookmarkNode);
-    console.log(bookmarkId.value);
   }
 
   // then update the bookmark content
@@ -459,7 +442,7 @@ const deleteBookmark = async () => {
           </div>
           <div class="flex justify-center items-center gap-1">
             <button v-show="urlValidation" class="p-1.5 flex justify-center items-center gap-1 rounded-full transition-colors duration-300" :class="showURLBtn ? 'text-white bg-sky-500 hover:bg-sky-400' : 'text-sky-200 hover:text-sky-500 active:text-white hover:bg-sky-100 active:bg-sky-500'"
-            @click="showURLBtn = !showURLBtn">
+            @click="setShowURLBtnHandler">
               <Iconify icon="ph:cursor-click" class="w-4 h-4"></Iconify>
             </button>
             <button v-show="tabURL !== bookmarkURL" class="p-1.5 text-sky-200 hover:text-sky-500 active:text-white hover:bg-sky-100 active:bg-sky-500 rounded-full transition-colors duration-300" @click="resetBookmarkURL">
