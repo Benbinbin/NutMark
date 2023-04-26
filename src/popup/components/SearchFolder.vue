@@ -1,56 +1,140 @@
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch, inject, nextTick } from 'vue';
 import { Icon as Iconify } from '@iconify/vue'
+import { useGetFaviconURL } from '@/composables/getFaviconURL'
 
+const props = defineProps(['showState'])
+const emit = defineEmits(['hide'])
+
+/**
+ * input
+ */
 // three state types
 // * entering
 // * waiting
 // * solved
 const searchState = ref('waiting')
+const includeBookmark = ref(true)
 
 const queryStr = ref('')
 const nodesArr = ref([])
 
 let queryStrInputTimer = null;
-const queryStrInputHandler = (event) => {
-  console.log(event);
+const inputHandler = (event) => {
   searchState.value = 'searching'
   if(queryStrInputTimer) clearTimeout(queryStrInputTimer)
 
-    queryStrInputTimer = setTimeout(async () => {
-      if(queryStr.value) {
-        nodesArr.value = await chrome.bookmarks.search(queryStr.value)
+  queryStrInputTimer = setTimeout(async () => {
+    if(queryStr.value) {
+      nodesArr.value = await chrome.bookmarks.search(queryStr.value)
 
-        // console.log(result);
-        // nodesArr.value = result
-        console.log(nodesArr.value);
-
-        searchState.value = 'solved'
-      } else {
-        searchState.value = 'waiting'
-      }
-    }, 500)
+      searchState.value = 'solved'
+    } else {
+      searchState.value = 'waiting'
+    }
+  }, 500)
 }
 
+// focus input box
 const inputDOM = ref(null)
-onMounted(() => {
-  if(inputDOM.value) {
-    inputDOM.value.focus()
+
+watch(() => props.showState, () => {
+  if(props.showState) {
+    nextTick(() => {
+      if(inputDOM.value) {
+        inputDOM.value.focus()
+      }
+    })
   }
 })
+
 const focusInputHandler = () => {
-  console.log(inputDOM.value);
-  if(inputDOM.value) {
+  if (inputDOM.value) {
     inputDOM.value.focus()
   }
+}
+
+/**
+ * folder path
+ */
+const getParentFolder = async (node, pathArr) => {
+  if(node.parentId) {
+    const result = await chrome.bookmarks.get(node.parentId)
+    const parentNode = result[0]
+    let parentFolderTitle;
+    if(parentNode.id === '0') {
+      parentFolderTitle = '根目录'
+    } else if(parentNode.title) {
+      parentFolderTitle = parentNode.title
+    } else {
+      parentFolderTitle = '未命名文件夹'
+    }
+    pathArr.unshift(parentFolderTitle)
+    // iteration get the parent
+    await getParentFolder(parentNode, pathArr)
+  }
+}
+
+const getFolderPath = async (node) => {
+  const markTitle = node.title.replace(queryStr.value, `<mark>${queryStr.value}</mark>`)
+  const folderPathArr = []
+  let folderNode;
+  if(node.url) {
+    // if this is the bookmark node
+    const result = await chrome.bookmarks.get(node.parentId)
+    folderNode = result[0]
+    folderPathArr.unshift(folderNode.title || '未命名文件夹')
+  } else {
+    // if this is the folder node
+    folderNode = node
+  }
+
+  await getParentFolder(folderNode, folderPathArr)
+
+  return {
+    id: node.id,
+    title: markTitle,
+    node: node,
+    folderId: folderNode.id,
+    parentFolderId: folderNode.parentId ? folderNode.parentId : folderNode.id,
+    folderPathArr: folderPathArr
+  }
+}
+
+const nodesWithFolderPath = ref([])
+watch(nodesArr, () => {
+  const promiseArr = []
+  nodesArr.value.forEach(node => {
+    promiseArr.push(getFolderPath(node))
+  })
+  Promise.all(promiseArr).then(values => {
+    nodesWithFolderPath.value = values
+  })
+})
+
+/**
+ * set folder
+ */
+const setSelectFolderId = inject('setSelectFolderId')
+const setNodeTreeId = inject('setNodeTreeId')
+
+const setFolderHandler = (node) => {
+  if(node.folderId && node.parentFolderId) {
+    setSelectFolderId(node.folderId)
+    setNodeTreeId(node.parentFolderId)
+  }
+  emit('hide')
 }
 </script>
 
 <template>
   <div class="rounded-md shadow shadow-orange-100">
     <!-- header -->
-    <div class="px-4 py-1.5 bg-orange-50/50 focus-within:bg-orange-50 border-b border-orange-200 focus-within:border-orange-300 rounded-t-md shadow shadow-orange-50 transition-colors duration-300">
-      <input ref="inputDOM" type="text" name="search bookmark node" id="search-bookmark-node" placeholder="请输入搜索内容" class="w-full py-0.5 text-sm text-orange-600 placeholder:text-orange-200 focus:outline-none bg-transparent" v-model="queryStr" @input="queryStrInputHandler">
+    <div class="px-2 py-1.5 flex items-center gap-2 bg-orange-50/50 focus-within:bg-orange-50 border-b border-orange-200 focus-within:border-orange-300 rounded-t-md shadow shadow-orange-50 transition-colors duration-300">
+      <button title="search entry include bookmarks or not" @click="includeBookmark = !includeBookmark" class="shrink-0 p-1 rounded transition-colors duration-300" :class="includeBookmark ? 'hover:bg-orange-100' : 'hover:bg-orange-200'">
+        <img src="@/assets/nut-mark.svg" alt="nut mark icon" class="w-4 h-4" :class="includeBookmark ? 'opacity-100' : 'opacity-30'">
+      </button>
+      <input ref="inputDOM" type="text" name="search bookmark node" id="search-bookmark-node" placeholder="请输入搜索内容" class="grow py-0.5 text-sm text-orange-600 placeholder:text-orange-200 focus:outline-none bg-transparent" v-model="queryStr" @input="inputHandler">
     </div>
     <!-- result -->
     <div class="flex justify-center items-center">
@@ -67,15 +151,36 @@ const focusInputHandler = () => {
         <Iconify icon="fluent:mail-inbox-dismiss-28-filled" class="w-10 h-10"></Iconify>
         <span class="text-sm">Oops! Empty Entry</span>
       </div>
-      <ul v-if="nodesArr.length>0">
-        <li v-for="node in nodesArr" >
-          {{ node.title }}
-        </li>
+      <ul v-show="searchState === 'solved' && nodesWithFolderPath.length>0" class="w-full p-4 space-y-2">
+        <template v-for="nodeObj in nodesWithFolderPath" :key="nodeObj.id">
+          <li>
+            <button v-show="includeBookmark || !nodeObj.node.url" class="group w-full p-2 hover:bg-orange-50 rounded transition-colors duration-300" @click="setFolderHandler(nodeObj)">
+              <div class="flex justify-start items-center gap-1 text-sm">
+                <Iconify icon="ph:folder-fill" class="shrink-0 w-5 h-5 text-orange-300 group-hover:text-orange-400 transition-colors duration-300" ></Iconify>
+                <span v-for="(folder, index) in nodeObj.folderPathArr" :key="index" class="flex flex-wrap justify-start items-center gap-1 text-gray-600 group-hover:text-orange-400 transition-colors duration-300">
+                  <span>{{ folder }}</span>
+                  <span v-if="!nodeObj.node.url || (nodeObj.node.url && index < nodeObj.folderPathArr.length - 1)">/</span>
+                </span>
+                <span v-if="!nodeObj.node.url" class="text-gray-600 group-hover:text-orange-400 transition-colors duration-300" v-html="nodeObj.title"></span>
+              </div>
+              <div v-if="nodeObj.node.url" class="mt-3 ml-4 flex justify-start items-center gap-1 text-blue-300 group-hover:text-orange-300 select-none">
+                <!-- <img v-if="nodeObj.node.url" :src="useGetFaviconURL(nodeObj.node.url)" alt="bookmark icon" class="shrink-0 w-4 h-4"> -->
+                <Iconify icon="ph:planet-fill" class="shrink-0 w-4 h-4"></Iconify>
+                <span class="line-camp-1 text-xs font-light" v-html="nodeObj.title"></span>
+              </div>
+            </button>
+          </li>
+        </template>
       </ul>
     </div>
   </div>
 </template>
 
 <style lang="scss" scoped>
-
+.line-camp-1 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+}
 </style>

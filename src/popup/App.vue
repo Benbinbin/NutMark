@@ -173,7 +173,7 @@ onMounted(() => {
   watch(nodeTreeId, () => {
     // reset folder path
     folderPath.value = []
-      getFolderPath(nodeTreeId.value)
+    getFolderPath(nodeTreeId.value)
   }, { immediate: true })
 })
 
@@ -541,7 +541,7 @@ const deleteBookmark = async () => {
         </div>
         <div class="w-full">
           <FolderGrid v-if="nodeTree" v-show="!showFolderSearch" :folder-path="folderPath" :nodes="nodeTree.children"></FolderGrid>
-          <SearchFolder v-if="showFolderSearch"></SearchFolder>
+          <SearchFolder v-show="showFolderSearch" :show-state="showFolderSearch" @hide="showFolderSearch=false"></SearchFolder>
         </div>
       </section>
     </main>

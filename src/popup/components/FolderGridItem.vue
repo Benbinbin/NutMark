@@ -231,7 +231,7 @@ const showBookmark = inject('showBookmark')
         <Iconify :icon="props.rootTree.length > 0 ? 'ph:folder-fill' : 'ph:folder'" class="w-5 h-5" />
       </button>
       <button class="pl-0.5 pr-1 py-1 text-sm break-all transition-colors duration-300"
-      :class="(selectFolderType === 'old' && selectFolderNodeId === props.rootId) ? 'text-white bg-green-500 rounded-r' : 'text-gray-700 hover:text-green-600 hover:bg-green-100 rounded'"
+      :class="(selectFolderType === 'old' && selectFolderNodeId === props.rootId) ? 'text-white bg-green-500 rounded-r' : 'text-gray-500 hover:text-green-600 hover:bg-green-100 rounded'"
       @click="setSelectFolderId(props.rootId)">{{ props.rootName }}</button>
     </div>
     <!-- expand the folder -->

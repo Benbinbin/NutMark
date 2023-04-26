@@ -62,11 +62,11 @@ const setNewFolderHandler = () => {
         </button>
         <!-- folder path -->
         <div class="flex flex-wrap justify-start items-center gap-1">
-          <div v-for="(folder, index) in folderPath" :key="folder.id" class="flex justify-center items-center gap-0.5 text-orange-500">
+          <div v-for="(folder, index) in props.folderPath" :key="folder.id" class="flex justify-center items-center gap-0.5 text-orange-500">
             <button class="px-1.5 py-1 text-xs font-bold rounded transition-colors duration-300"
             :class="selectFolderType === 'old' && selectFolderNodeId === folder.id ? 'text-green-500 hover:bg-green-100 ' : 'text-orange-500 hover:bg-orange-100 '"
             @click="setNodeTreeId(folder.id)">{{ folder.id === '0' ? '根目录' : (folder.title || '未命名文件夹') }}</button>
-            <span v-if="index < folderPath.length -1">/</span>
+            <span v-if="index < props.folderPath.length -1">/</span>
           </div>
         </div>
       </div>
@@ -85,7 +85,7 @@ const setNewFolderHandler = () => {
     <div class="grid-container w-full max-h-[500px] overflow-y-auto px-4 py-6 grid grid-cols-4 gap-2 grid-flow-row-dense justify-items-start rounded-b-md">
       <!-- new folder -->
       <div v-if="selectFolderType === 'new' && newFolder && newFolder.parentId === nodeTreeId" class="w-full h-fit px-1.5 py-1 flex justify-center items-center gap-1 text-white bg-purple-500 hover:bg-purple-600 rounded" >
-        <Iconify icon="ph:folder-dashed" class="shrink-0 w-5 h-5" ></Iconify>
+        <Iconify icon="ph:folder-dashed" class="shrink-0 w-5 h-5"></Iconify>
         <div v-show="newFolderTitleEdit" class="grow flex justify-between items-center gap-2">
           <input ref="inputDOM" type="text" placeholder="请输入目录名称" v-model="newFolderTitle" class="w-full px-1.5 text-xs text-purple-500 placeholder:text-purple-300 focus:text-purple-600 outline outline-1 outline-purple-400 focus:outline-purple-500 rounded-md" @keyup.enter="setNewFolderHandler" @blur="setNewFolderHandler">
           <button class="shrink-0 p-1 text-green-800 hover:text-white bg-green-200 hover:bg-green-400 rounded transition-colors duration-300" @click="setNewFolderHandler">
@@ -99,7 +99,7 @@ const setNewFolderHandler = () => {
           </button>
         </div>
       </div>
-      <template v-for="node in nodes">
+      <template v-for="node in props.nodes">
         <!-- the folder node -->
         <FolderGridItem v-if="node.children" :key="node.id" :root-id="node.id" :root-name="node.title" :root-tree="node.children"></FolderGridItem>
         <!-- the bookmark node -->
