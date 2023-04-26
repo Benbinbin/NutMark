@@ -137,7 +137,7 @@ const setFolderHandler = (node) => {
       <input ref="inputDOM" type="text" name="search bookmark node" id="search-bookmark-node" placeholder="请输入搜索内容" class="grow py-0.5 text-sm text-orange-600 placeholder:text-orange-200 focus:outline-none bg-transparent" v-model="queryStr" @input="inputHandler">
     </div>
     <!-- result -->
-    <div class="flex justify-center items-center">
+    <div class="result-content-container w-full max-h-[450px] overflow-y-auto">
       <button v-show="searchState === 'waiting'" class="w-full px-4 py-8 flex flex-col justify-center items-center gap-2 text-orange-300 hover:text-orange-400 transition-colors duration-300"
       @click="focusInputHandler">
         <Iconify icon="fluent:text-t-28-filled" class="w-10 h-10"></Iconify>
@@ -157,16 +157,16 @@ const setFolderHandler = (node) => {
             <button v-show="includeBookmark || !nodeObj.node.url" class="group w-full p-2 hover:bg-orange-50 rounded transition-colors duration-300" @click="setFolderHandler(nodeObj)">
               <div class="flex justify-start items-center gap-1 text-sm">
                 <Iconify icon="ph:folder-fill" class="shrink-0 w-5 h-5 text-orange-300 group-hover:text-orange-400 transition-colors duration-300" ></Iconify>
-                <span v-for="(folder, index) in nodeObj.folderPathArr" :key="index" class="flex flex-wrap justify-start items-center gap-1 text-gray-600 group-hover:text-orange-400 transition-colors duration-300">
+                <span v-for="(folder, index) in nodeObj.folderPathArr" :key="index" class="flex flex-wrap justify-start items-center gap-1 text-gray-700 group-hover:text-orange-400 transition-colors duration-300">
                   <span>{{ folder }}</span>
                   <span v-if="!nodeObj.node.url || (nodeObj.node.url && index < nodeObj.folderPathArr.length - 1)">/</span>
                 </span>
-                <span v-if="!nodeObj.node.url" class="text-gray-600 group-hover:text-orange-400 transition-colors duration-300" v-html="nodeObj.title"></span>
+                <span v-if="!nodeObj.node.url" class="text-gray-700 group-hover:text-orange-400 transition-colors duration-300" v-html="nodeObj.title"></span>
               </div>
-              <div v-if="nodeObj.node.url" class="mt-3 ml-4 flex justify-start items-center gap-1 text-blue-300 group-hover:text-orange-300 select-none">
-                <!-- <img v-if="nodeObj.node.url" :src="useGetFaviconURL(nodeObj.node.url)" alt="bookmark icon" class="shrink-0 w-4 h-4"> -->
-                <Iconify icon="ph:planet-fill" class="shrink-0 w-4 h-4"></Iconify>
-                <span class="line-camp-1 text-xs font-light" v-html="nodeObj.title"></span>
+              <div v-if="nodeObj.node.url" class="mt-3 ml-4 flex justify-start items-center gap-1 text-blue-400 group-hover:text-orange-300 select-none">
+                <img v-if="nodeObj.node.url" :src="useGetFaviconURL(nodeObj.node.url)" alt="bookmark icon" class="shrink-0 w-4 h-4">
+                <Iconify v-else icon="ph:planet-fill" class="shrink-0 w-4 h-4"></Iconify>
+                <span class="line-camp-1 text-xs" v-html="nodeObj.title"></span>
               </div>
             </button>
           </li>
@@ -177,6 +177,19 @@ const setFolderHandler = (node) => {
 </template>
 
 <style lang="scss" scoped>
+.result-content-container {
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    border-radius: 3px;
+    background-color: #d1d5db;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: #9ca3af;
+  }
+}
+
 .line-camp-1 {
   overflow: hidden;
   display: -webkit-box;

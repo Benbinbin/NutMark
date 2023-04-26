@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, watch, provide } from 'vue';
+import { onMounted, ref, watch, provide, nextTick } from 'vue';
 import { useCheckBookmarkState } from '@/composables/checkBookmarkState'
 import { useGetFaviconURL } from '@/composables/getFaviconURL'
 import { Icon as Iconify } from '@iconify/vue'
@@ -36,11 +36,22 @@ const bookmarkURL = ref('')
 /**
  * textarea
  */
+const bookmarkTitleDOM = ref(null)
+const bookmarkUrlDOM = ref(null)
+
 // change textarea input box height
-const changeHeightHandler = (event) => {
-  event.target.style.height = 'auto'
-  event.target.style.height = `${event.target.scrollHeight}px`
+const changeHeightHandler = (dom) => {
+  dom.style.height = 'auto'
+  dom.style.height = `${dom.scrollHeight}px`
 }
+
+onMounted(() => {
+  watch(showURLBtn, () => {
+    if(!showURLBtn.value && bookmarkUrlDOM.value) {
+      changeHeightHandler(bookmarkUrlDOM.value)
+    }
+  })
+})
 
 /**
  * reset the bookmark title or url based on tab
@@ -58,7 +69,7 @@ const resetBookmarkURL = () => {
  * bookmark url
  */
 const urlObj = ref(null)
-const urlValidation = ref(false)
+const urlValidation = ref(true)
 const validateURL = (url) => {
   try {
     if(url) {
@@ -75,7 +86,7 @@ const validateURL = (url) => {
 
 let urlInputTimer = null;
 const urlInputHandler = (event) => {
-  changeHeightHandler(event)
+  changeHeightHandler(event.target)
   if(urlInputTimer) {
     clearTimeout(urlInputTimer)
   }
@@ -122,8 +133,7 @@ const setBookmarkURL = (target) => {
 /**
  * search folder
  */
-const showFolderSearch = ref(true)
-
+const showFolderSearch = ref(false)
 
 /**
  * node tree
@@ -133,6 +143,7 @@ const showFolderSearch = ref(true)
 const nodeTreeId = ref('0')
 const setNodeTreeId = (id) => {
   nodeTreeId.value = id
+  showFolderSearch.value = false
 }
 provide('nodeTreeId', nodeTreeId)
 provide('setNodeTreeId', setNodeTreeId)
@@ -295,6 +306,14 @@ const setBookmarkParameters = async () => {
  */
 onMounted(async () => {
   await setBookmarkParameters()
+  // nextTick(() => {
+    if(bookmarkUrlDOM.value) {
+      changeHeightHandler(bookmarkUrlDOM.value)
+    }
+    if(bookmarkTitleDOM.value) {
+      changeHeightHandler(bookmarkTitleDOM.value)
+    }
+  // })
   validateURL(bookmarkURL.value)
   if(urlValidation.value) {
     const result = await chrome.storage.local.get(["showURLBtn"])
@@ -341,7 +360,7 @@ const updateBook = async () => {
       const folderNode = await chrome.bookmarks.create(newFolder.value)
       folderNodeId = folderNode.id
     } else {
-      fonderNodeId = selectFolderNodeId.value
+      folderNodeId = selectFolderNodeId.value
     }
     // then move the bookmark to the folder
     const bookmarkNode = await chrome.bookmarks.move(
@@ -389,7 +408,7 @@ const deleteBookmark = async () => {
     <header class="px-2 py-2 flex justify-between sticky top-0 inset-x-0 bg-gray-50 border-b shadow">
       <div class="px-3 py-1 flex justify-center items-center gap-1 border rounded-full transition-colors duration-300"
       :class="bookmarkState ? 'bg-amber-100/60 hover:bg-amber-200 border-amber-200 text-amber-500 hover:text-amber-600' : 'bg-emerald-100/60 hover:bg-emerald-200 text-emerald-500 border-emerald-200 hover:text-emerald-600'">
-        <img v-if="bookmarkURL" :src="useGetFaviconURL(bookmarkURL)" alt="bookmark icon" class="w-6 h-6">
+        <img v-if="bookmarkURL" :src="useGetFaviconURL(bookmarkURL)" alt="bookmark icon" class="w-4 h-4">
         <Iconify v-else icon="ph:planet-fill" class="w-4 h-4 text-purple-500"></Iconify>
         <span class="text-xs font-bold">{{ bookmarkState ? '已收藏' : '未收藏' }}</span>
       </div>
@@ -430,7 +449,7 @@ const deleteBookmark = async () => {
           </button>
         </div>
         <div class="textarea-container border-gray-300 focus-within:border-gray-400 shadow-sm shadow-gray-100">
-          <textarea name="bookmark name" id="bookmark-name" class="text-gray-700 placeholder:text-gray-300" placeholder="请输入书签的名称" v-model="bookmarkTitle" @input="changeHeightHandler"></textarea>
+          <textarea ref="bookmarkTitleDOM" name="bookmark name" id="bookmark-name" class="text-gray-700 placeholder:text-gray-300" placeholder="请输入书签的名称" v-model="bookmarkTitle" @input="changeHeightHandler"></textarea>
         </div>
       </section>
       <!-- bookmark url section -->
@@ -460,8 +479,8 @@ const deleteBookmark = async () => {
           </div>
         </div>
         <div class="space-y-2">
-          <div v-if="!showURLBtn || !urlValidation || !bookmarkURL" class="textarea-container shadow" :class="urlValidation ? 'border-sky-300 focus-within:border-sky-400 shadow-sky-50' : 'border-red-300 focus-within:border-red-400 shadow-red-50'">
-            <textarea name="bookmark url" id="bookmark-url-textarea" placeholder="请输入书签的链接地址" :class="urlValidation ? 'text-sky-600 placeholder:text-sky-200' : 'text-red-600'" v-model="bookmarkURL" @input="urlInputHandler"></textarea>
+          <div v-show="!showURLBtn || !urlValidation || !bookmarkURL" class="textarea-container shadow" :class="urlValidation ? 'border-sky-300 focus-within:border-sky-400 shadow-sky-50' : 'border-red-300 focus-within:border-red-400 shadow-red-50'">
+            <textarea ref="bookmarkUrlDOM" name="bookmark url" id="bookmark-url-textarea" placeholder="请输入书签的链接地址" :class="urlValidation ? 'text-sky-600 placeholder:text-sky-200' : 'text-red-600'" v-model="bookmarkURL" @input="urlInputHandler"></textarea>
           </div>
 
           <div v-if="showURLBtn && urlValidation && urlObj" class="rounded-md shadow shadow-sky-200">
@@ -491,7 +510,7 @@ const deleteBookmark = async () => {
                 <span>Hash</span>
               </button>
             </div>
-            <div class="px-4 py-6 flex justify-center items-center rounded-b-md">
+            <div class="url-content-container w-full max-h-[450px] overflow-y-auto px-4 py-6 flex justify-start items-start rounded-b-md">
               <code class="max-w-full px-1 py-0.5 flex flex-wrap justify-start items-center gap-1 text-xs font-mono">
                 <!-- host -->
                 <span class="url-snippet flex flex-wrap justify-center items-center text-sky-600 border-sky-300" :class="hoverTarget === 'host' ? 'bg-sky-100' : ''">
@@ -604,6 +623,18 @@ section {
 .url-btn-container {
   button {
     @apply px-2.5 py-1.5 flex justify-center items-center gap-1 rounded-md transition-colors duration-300;
+  }
+}
+
+.url-content-container {
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: #bfdbfe;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: #60a5fa;
   }
 }
 
