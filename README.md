@@ -8,14 +8,10 @@ I like to collect and organize bookmarks like a squirrel hoards nuts, so I build
 
 ## Feature
 
-Nut Mark focus on the following features to make bookmarking step more smoothly and easily
+Nut Mark focus on collecting bookmarks with the following features to make the process more smoothly and easily
 
 :sparkles: Clean "dirty" URL with one click
 
-:sparkles: Quick search to find the folder to hold the bookmark
+:sparkles: Navigate freely through the directory tree
 
-Bonus features in plan (maybe)
-
-:balloon: Manage bookmarks with a user-friendly interface
-
-:balloon: Share bookmarks in different format, like Markdown links, JSON object, images with QR Code
+:sparkles: Quick search to find the directory to hold the bookmark

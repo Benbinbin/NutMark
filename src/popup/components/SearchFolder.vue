@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, watch, inject, nextTick } from 'vue';
+import { ref, watch, inject, nextTick, TransitionGroup } from 'vue';
 import { Icon as Iconify } from '@iconify/vue'
 import { useGetFaviconURL } from '@/composables/getFaviconURL'
 
@@ -152,25 +152,34 @@ const setFolderHandler = (node) => {
         <span class="text-sm">Oops! Empty Entry</span>
       </div>
       <ul v-show="searchState === 'solved' && nodesWithFolderPath.length>0" class="w-full p-4 space-y-2">
-        <template v-for="nodeObj in nodesWithFolderPath" :key="nodeObj.id">
-          <li>
-            <button v-show="includeBookmark || !nodeObj.node.url" class="group w-full p-2 hover:bg-orange-50 rounded transition-colors duration-300" @click="setFolderHandler(nodeObj)">
-              <div class="flex justify-start items-center gap-1 text-sm">
-                <Iconify icon="ph:folder-fill" class="shrink-0 w-5 h-5 text-orange-300 group-hover:text-orange-400 transition-colors duration-300" ></Iconify>
-                <span v-for="(folder, index) in nodeObj.folderPathArr" :key="index" class="flex flex-wrap justify-start items-center gap-1 text-gray-700 group-hover:text-orange-400 transition-colors duration-300">
-                  <span>{{ folder }}</span>
-                  <span v-if="!nodeObj.node.url || (nodeObj.node.url && index < nodeObj.folderPathArr.length - 1)">/</span>
-                </span>
-                <span v-if="!nodeObj.node.url" class="text-gray-700 group-hover:text-orange-400 transition-colors duration-300" v-html="nodeObj.title"></span>
-              </div>
-              <div v-if="nodeObj.node.url" class="mt-3 ml-4 flex justify-start items-center gap-1 text-blue-400 group-hover:text-orange-300 select-none">
-                <img v-if="nodeObj.node.url" :src="useGetFaviconURL(nodeObj.node.url)" alt="bookmark icon" class="shrink-0 w-4 h-4">
-                <Iconify v-else icon="ph:planet-fill" class="shrink-0 w-4 h-4"></Iconify>
-                <span class="line-camp-1 text-xs" v-html="nodeObj.title"></span>
-              </div>
-            </button>
-          </li>
-        </template>
+        <TransitionGroup
+          enter-from-class="opacity-0 -translate-x-full"
+          enter-active-class="transition-all duration-300"
+          enter-to-class="opacity-100 translate-x-0"
+          leave-from-class="opacity-100 translate-x-0"
+          leave-active-class="transition-all duration-300"
+          leave-to-class="opacity-0 -translate-x-full"
+          >
+          <template v-for="nodeObj in nodesWithFolderPath" :key="nodeObj.id">
+            <li v-show="includeBookmark || !nodeObj.node.url">
+              <button class="group w-full p-2 hover:bg-orange-50 rounded transition-colors duration-300" @click="setFolderHandler(nodeObj)">
+                <div class="flex justify-start items-center gap-1 text-sm">
+                  <Iconify icon="ph:folder-fill" class="shrink-0 w-5 h-5 text-orange-300 group-hover:text-orange-400 transition-colors duration-300" ></Iconify>
+                  <span v-for="(folder, index) in nodeObj.folderPathArr" :key="index" class="flex flex-wrap justify-start items-center gap-1 text-gray-700 group-hover:text-orange-400 transition-colors duration-300">
+                    <span>{{ folder }}</span>
+                    <span v-if="!nodeObj.node.url || (nodeObj.node.url && index < nodeObj.folderPathArr.length - 1)">/</span>
+                  </span>
+                  <span v-if="!nodeObj.node.url" class="text-gray-700 group-hover:text-orange-400 transition-colors duration-300" v-html="nodeObj.title"></span>
+                </div>
+                <div v-if="nodeObj.node.url" class="mt-3 ml-4 flex justify-start items-center gap-1 text-blue-400 group-hover:text-orange-300 select-none">
+                  <img v-if="nodeObj.node.url" :src="useGetFaviconURL(nodeObj.node.url)" alt="bookmark icon" class="shrink-0 w-4 h-4">
+                  <Iconify v-else icon="ph:planet-fill" class="shrink-0 w-4 h-4"></Iconify>
+                  <span class="line-camp-1 text-xs" v-html="nodeObj.title"></span>
+                </div>
+              </button>
+            </li>
+          </template>
+        </TransitionGroup>
       </ul>
     </div>
   </div>
