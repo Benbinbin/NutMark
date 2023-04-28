@@ -115,13 +115,13 @@ watch(nodesArr, () => {
 /**
  * set folder
  */
-const selectFolderNodeId = inject('selectFolderNodeId')
-const setSelectFolderId = inject('setSelectFolderId')
+const bookmarkFolderId = inject('bookmarkFolderId')
+const setBookmarkFolderId = inject('setBookmarkFolderId')
 const setNodeTreeId = inject('setNodeTreeId')
 
 const setFolderHandler = (node) => {
   if(node.folderId && node.parentFolderId) {
-    setSelectFolderId(node.folderId)
+    setBookmarkFolderId(node.folderId)
     setNodeTreeId(node.parentFolderId)
   }
   emit('hide')
@@ -163,7 +163,7 @@ const setFolderHandler = (node) => {
           >
           <template v-for="nodeObj in nodesWithFolderPath" :key="nodeObj.id">
             <li v-show="includeBookmark || !nodeObj.node.url">
-              <button class="group w-full p-2  rounded transition-colors duration-300" :class="nodeObj.folderId === selectFolderNodeId ? 'bg-orange-50' : 'hover:bg-orange-50'"
+              <button class="group w-full p-2  rounded transition-colors duration-300" :class="nodeObj.folderId === bookmarkFolderId ? 'bg-orange-50' : 'hover:bg-orange-50'"
               @click="setFolderHandler(nodeObj)">
                 <div class="flex justify-start items-center gap-1 text-sm">
                   <Iconify icon="ph:folder-fill" class="shrink-0 w-5 h-5 text-orange-300 group-hover:text-orange-400 transition-colors duration-300" ></Iconify>

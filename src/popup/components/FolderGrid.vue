@@ -12,7 +12,7 @@ const nodeTreeId = inject('nodeTreeId')
 const setNodeTreeId = inject('setNodeTreeId')
 
 const selectFolderType = inject('selectFolderType')
-const selectFolderNodeId = inject('selectFolderNodeId')
+const bookmarkFolderId = inject('bookmarkFolderId')
 
 // new folder
 const newFolder = inject('newFolder')
@@ -64,7 +64,7 @@ const setNewFolderHandler = () => {
         <div class="flex flex-wrap justify-start items-center gap-1">
           <div v-for="(folder, index) in props.folderPath" :key="folder.id" class="flex justify-center items-center gap-0.5 text-orange-500">
             <button class="px-1.5 py-1 text-xs font-bold rounded transition-colors duration-300"
-            :class="selectFolderType === 'old' && selectFolderNodeId === folder.id ? 'text-green-500 hover:bg-green-100 ' : 'text-orange-500 hover:bg-orange-100 '"
+            :class="selectFolderType === 'old' && bookmarkFolderId === folder.id ? 'text-green-500 hover:bg-green-100 ' : 'text-orange-500 hover:bg-orange-100 '"
             @click="setNodeTreeId(folder.id)">{{ folder.id === '0' ? '根目录' : (folder.title || '未命名文件夹') }}</button>
             <span v-if="index < props.folderPath.length -1">/</span>
           </div>

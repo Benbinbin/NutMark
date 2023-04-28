@@ -8,7 +8,6 @@ const props = defineProps(['rootId', 'rootName', 'rootTree'])
 
 // the folder has expanded or not
 const expand = ref(false)
-// const expand = ref(props.rootTree.length>0)
 
 // the current folder after drive down
 const currentTree = ref([])
@@ -176,8 +175,8 @@ const setNodeTreeId = inject('setNodeTreeId')
  * select folder node
  */
 const selectFolderType = inject('selectFolderType')
-const selectFolderNodeId = inject('selectFolderNodeId')
-const setSelectFolderId = inject('setSelectFolderId')
+const bookmarkFolderId = inject('bookmarkFolderId')
+const setBookmarkFolderId = inject('setBookmarkFolderId')
 
 // new folder
 const newFolder = inject('newFolder')
@@ -226,13 +225,13 @@ const showBookmark = inject('showBookmark')
     <div v-show="!expand" :title="props.rootName"
       class="flex justify-start items-start">
       <button class="shrink-0 pl-1 pr-0.5 py-1 transition-colors duration-300"
-      :class="(selectFolderType === 'old' && selectFolderNodeId === props.rootId) ? 'text-white bg-green-500 hover:bg-green-600 rounded-l' : 'text-orange-300 hover:text-orange-400 hover:bg-orange-50 rounded'"
+      :class="(selectFolderType === 'old' && bookmarkFolderId === props.rootId) ? 'text-white bg-green-500 hover:bg-green-600 rounded-l' : 'text-orange-300 hover:text-orange-400 hover:bg-orange-50 rounded'"
       @click.exact="expand = true" @click.ctrl.exact="setNodeTreeId(props.rootId)">
         <Iconify :icon="props.rootTree.length > 0 ? 'ph:folder-fill' : 'ph:folder'" class="w-5 h-5" />
       </button>
       <button class="pl-0.5 pr-1 py-1 text-sm break-all transition-colors duration-300"
-      :class="(selectFolderType === 'old' && selectFolderNodeId === props.rootId) ? 'text-white bg-green-500 rounded-r' : 'text-gray-500 hover:text-green-600 hover:bg-green-100 rounded'"
-      @click="setSelectFolderId(props.rootId)">{{ props.rootName }}</button>
+      :class="(selectFolderType === 'old' && bookmarkFolderId === props.rootId) ? 'text-white bg-green-500 rounded-r' : 'text-gray-500 hover:text-green-600 hover:bg-green-100 rounded'"
+      @click="setBookmarkFolderId(props.rootId)">{{ props.rootName }}</button>
     </div>
     <!-- expand the folder -->
     <div v-show="expand" class="w-full h-full flex flex-col">
@@ -242,15 +241,15 @@ const showBookmark = inject('showBookmark')
         <div
           :key="folderNavArr[0].id"
           class="shrink-0 group w-fit p-1 flex justify-center items-center gap-1 relative z-10 text-xs font-bold bg-gradient-to-b from-10% to-white border-t border-x rounded-t translate-y-px"
-          :class="(selectFolderType === 'old' && selectFolderNodeId===folderNavArr[0].id) ? 'text-green-400 from-green-50 border-green-300' : 'text-orange-400 from-orange-50 border-orange-300'"
+          :class="(selectFolderType === 'old' && bookmarkFolderId===folderNavArr[0].id) ? 'text-green-400 from-green-50 border-green-300' : 'text-orange-400 from-orange-50 border-orange-300'"
           >
           <div class="flex justify-center items-center">
             <button class="shrink-0 pl-1 pr-0.5 py-1 hover:text-red-500 hover:bg-red-200 rounded transition-colors duration-300" @click="expand = false">
               <Iconify :icon="currentTree.length ? 'ph:folder-open-fill' : 'ph:folder-open'" class="w-4 h-4" />
             </button>
-            <button class="pl-0.5 pr-1 py-1 hover:text-green-500 hover:bg-green-100 rounded transition-colors duration-300" @click="setSelectFolderId(folderNavArr[0].id)">{{ folderNavArr[0].title || '未命名文件夹' }}</button>
+            <button class="pl-0.5 pr-1 py-1 hover:text-green-500 hover:bg-green-100 rounded transition-colors duration-300" @click="setBookmarkFolderId(folderNavArr[0].id)">{{ folderNavArr[0].title || '未命名文件夹' }}</button>
           </div>
-          <button class="shrink-0 p-1 rounded transition-colors duration-300" :class="(selectFolderType === 'old' && selectFolderNodeId === folderNavArr[0].id) ? 'text-green-500 hover:text-green-600 hover:bg-green-200' : 'text-orange-500 hover:text-orange-600 hover:bg-orange-200'" @click="setNodeTreeId(folderNavArr[0].id)"
+          <button class="shrink-0 p-1 rounded transition-colors duration-300" :class="(selectFolderType === 'old' && bookmarkFolderId === folderNavArr[0].id) ? 'text-green-500 hover:text-green-600 hover:bg-green-200' : 'text-orange-500 hover:text-orange-600 hover:bg-orange-200'" @click="setNodeTreeId(folderNavArr[0].id)"
           >
             <Iconify icon="ph:arrow-square-out" class="w-4 h-4" />
           </button>
@@ -262,7 +261,7 @@ const showBookmark = inject('showBookmark')
           <button v-for="(folder, index) in folderNavArr.slice(1)"
             :key="folder.id"
             class="shrink-0 p-2 relative text-xs font-bold border-t border-r rounded-tr transition-colors duration-300"
-            :class="(selectFolderType === 'old' && selectFolderNodeId === folder.id) ? 'hover:text-green-500 hover:bg-green-100 border-green-300 text-green-400' : 'hover:text-orange-500 hover:bg-orange-100 border-orange-300 text-orange-400'"
+            :class="(selectFolderType === 'old' && bookmarkFolderId === folder.id) ? 'hover:text-green-500 hover:bg-green-100 border-green-300 text-green-400' : 'hover:text-orange-500 hover:bg-orange-100 border-orange-300 text-orange-400'"
             :style="`transform: translateX(-${(index * 2)}px)`" @click="setFolderNavPath(folder.path)">
             {{ folder.title || '未命名文件夹' }}
           </button>
@@ -282,7 +281,7 @@ const showBookmark = inject('showBookmark')
           <button title="add new sub folder"
             :disabled="newFolder && newFolder.parentId === folderNavArr[0].id"
             class="p-1 flex items-center rounded-full transition-colors duration-300"
-            :class="(selectFolderType === 'old' && selectFolderNodeId === folderNavArr[0].id) ? 'text-green-500 hover:text-green-600 active:text-white bg-green-100 hover:bg-green-200 active:bg-green-500' : 'text-orange-400 hover:text-orange-500 active:text-white bg-orange-100 hover:bg-orange-200 active:bg-orange-500'"
+            :class="(selectFolderType === 'old' && bookmarkFolderId === folderNavArr[0].id) ? 'text-green-500 hover:text-green-600 active:text-white bg-green-100 hover:bg-green-200 active:bg-green-500' : 'text-orange-400 hover:text-orange-500 active:text-white bg-orange-100 hover:bg-orange-200 active:bg-orange-500'"
             :style="newFolder && newFolder.parentId === folderNavArr[0].id ? 'opacity: 0.3' : ''"
             @click="addNewFolder"
             >
@@ -292,7 +291,7 @@ const showBookmark = inject('showBookmark')
       </div>
       <div
       class="nodes-container grow p-2 overflow-y-auto bg-white border rounded-b rounded-tr"
-      :class="(selectFolderType === 'old' && selectFolderNodeId === folderNavArr[0].id) ? 'border-green-300 ' : 'border-orange-300'">
+      :class="(selectFolderType === 'old' && bookmarkFolderId === folderNavArr[0].id) ? 'border-green-300 ' : 'border-orange-300'">
         <div class="flex flex-wrap justify-start items-start gap-1">
           <!-- new folder -->
           <div v-if="selectFolderType === 'new' && newFolder && newFolder.parentId === folderNavArr[0].id" class="p-1.5 flex justify-center items-center gap-1 text-white bg-purple-500 hover:bg-purple-600 rounded transition-colors duration-300">
@@ -322,13 +321,13 @@ const showBookmark = inject('showBookmark')
             <div v-if="item.children" :key="item.id"
               class="flex justify-center items-start">
               <button class="pl-1.5 pr-0.5 py-1.5  transition-colors duration-300"
-              :class="(selectFolderType === 'old' && selectFolderNodeId === item.id) ? 'text-white bg-green-500 hover:bg-green-600 rounded-l' : 'text-orange-300 hover:text-orange-400 hover:bg-orange-50 rounded'"
+              :class="(selectFolderType === 'old' && bookmarkFolderId === item.id) ? 'text-white bg-green-500 hover:bg-green-600 rounded-l' : 'text-orange-300 hover:text-orange-400 hover:bg-orange-50 rounded'"
               @click="addFolderNav(item.id, item.title, index)">
                 <Iconify :icon="item.children.length > 0 ? 'ph:folder-fill' : 'ph:folder'" class="shrink-0 w-4 h-4" />
               </button>
               <button class="pl-0.5 pr-1.5 py-1.5 text-xs break-all transition-colors duration-300"
-              :class="(selectFolderType === 'old' && selectFolderNodeId === item.id) ? 'text-white bg-green-500 rounded-r' : 'text-gray-500 hover:text-green-600 hover:bg-green-100 rounded'"
-              @click="setSelectFolderId(item.id)">
+              :class="(selectFolderType === 'old' && bookmarkFolderId === item.id) ? 'text-white bg-green-500 rounded-r' : 'text-gray-500 hover:text-green-600 hover:bg-green-100 rounded'"
+              @click="setBookmarkFolderId(item.id)">
                 {{ item.title || '未命名文件夹' }}
               </button>
             </div>
