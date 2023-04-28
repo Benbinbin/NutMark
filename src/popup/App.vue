@@ -1,26 +1,23 @@
 <script setup>
-import { onMounted, ref, watch, provide, nextTick } from 'vue';
-import { useCheckBookmarkState } from '@/composables/checkBookmarkState';
+import { onMounted, ref, provide, nextTick } from 'vue';
+// import { useCheckBookmarkState } from '@/composables/checkBookmarkState';
 import { useGetFaviconURL } from '@/composables/getFaviconURL';
 import { Icon as Iconify } from '@iconify/vue';
 import BookmarkUrlSession from './components/BookmarkUrlSession.vue';
 import BookmarkFolderSession from './components/BookmarkFolderSession.vue';
 
-
-const props = defineProps(['tabTitle', 'tabUrl', 'bookmarkState', 'bookmarkId', 'bookmarkTitleOrigin', 'bookmarkUrlOrigin', 'bookmarkFolderIdOrigin']);
-
-/**
- * similar bookmarks
- */
-const urlHostname = ref('');
-const similarBookmarks = ref([]);
-const showSimilarBookmarksModal = ref(false);
+const props = defineProps(['tabTitle', 'tabUrl', 'bookmarkState', 'bookmarkId', 'bookmarkTitleOrigin', 'bookmarkUrlOrigin', 'bookmarkFolderIdOrigin', 'similarBookmarks']);
 
 const bookmarkState = ref(props.bookmarkState)
+
+/**
+ * bookmark id
+ */
+const bookmarkId = ref(props.bookmarkId)
+
 /**
  * bookmark title
  */
-const bookmarkTitleDOM = ref(null);
 const bookmarkTitle = ref('');
 if(props.bookmarkTitleOrigin) {
   bookmarkTitle.value = props.bookmarkTitleOrigin;
@@ -28,11 +25,21 @@ if(props.bookmarkTitleOrigin) {
   bookmarkTitle.value = props.tabTitle;
 }
 
+const bookmarkTitleDOM = ref(null);
 // change textarea input box height
 const changeHeightHandler = (dom) => {
   dom.style.height = 'auto';
   dom.style.height = `${dom.scrollHeight}px`;
 }
+
+// setting textarea height
+onMounted(async () => {
+  nextTick(() => {
+    if (bookmarkTitleDOM.value) {
+      changeHeightHandler(bookmarkTitleDOM.value)
+    }
+  })
+})
 
 // reset the bookmark title based on tab
 const resetBookmarkTitle = () => {
@@ -91,113 +98,12 @@ provide('setBookmarkFolderId', setBookmarkFolderId)
 provide('newFolder', newFolder)
 provide('setNewFolder', setNewFolder)
 
-// get the node tree id of the folder
-// with fallback solution to the root node and 「书签栏」
-// const getTreeId = async (folderId) => {
-//   // get the folder for this bookmark node
-//   const resultForFolderNode = await chrome.bookmarks.get(folderId)
-//   const folderNode = resultForFolderNode[0]
-
-//   // get the node tree
-//   let targetId;
-//   if (folderNode.parentId) {
-//     // if the folder node has parent folder
-//     targetId = folderNode.parentId
-//   } else {
-//     // if the folder node doesn't have parent folder
-//     // (when the folder is the root folder)
-//     // then set the node tree id as this folder
-//     targetId = folderNode.id
-//   }
-
-//   return targetId
-// }
-
-// /**
-//  * set the parameters about bookmark
-//  * get from tab or recent created bookmark information
-//  */
-// const setBookmarkParameters = async () => {
-//   await getTabInfo()
-
-//   // check the url bookmark state
-//   const result = await useCheckBookmarkState(tabUrl.value);
-
-//   if (result) {
-//     // if the tab has already bookmarked
-//     bookmarkState.value = true
-
-//     bookmarkId.value = result.id
-
-//     bookmarkTitle.value = result.title
-//     bookmarkTitleOrigin.value = result.title
-
-//     bookmarkUrl.value = result.url
-//     bookmarkUrlOrigin.value = result.url
-
-//     bookmarkFolderId.value = result.parentId
-//     bookmarkFolderIdOrigin.value = result.parentId
-
-//     // set the node tree id
-//     nodeTreeId.value = await getTreeId(result.parentId)
-//   } else {
-//     // if the tab doesn't bookmark
-//     bookmarkState.value = false
-//     bookmarkTitle.value = tabTitle.value;
-//     bookmarkUrl.value = tabUrl.value;
-
-//     // get recent bookmark to build node tree
-//     const recentBookmarkArr = await chrome.bookmarks.getRecent(1)
-
-//     if (recentBookmarkArr.length > 0) {
-//       // if there is a bookmark created recently
-//       const recentBookmark = recentBookmarkArr[0]
-//       bookmarkFolderId.value = recentBookmark.parentId
-//       nodeTreeId.value = await getTreeId(recentBookmark.parentId)
-//     } else {
-//       // if there isn't any bookmarks created recently
-//       // (when this is a brand new browser)
-//       // set the node tree based on the root node
-//       nodeTreeId.value = '0'
-//       // and set the selected folder as the first children node
-//       // 根目录下的第一个子文件夹一般就是「书签栏」
-//       bookmarkFolderId.value = '1'
-//     }
-//   }
-// }
-
 /**
- * get init information
+ * similar bookmarks
  */
-onMounted(async () => {
-  // await setBookmarkParameters()
-  // console.log(bookmarkUrl.value);
-  nextTick(() => {
-    // if(bookmarkUrlDOM.value) {
-    //   changeHeightHandler(bookmarkUrlDOM.value)
-    // }
-    if(bookmarkTitleDOM.value) {
-      changeHeightHandler(bookmarkTitleDOM.value)
-    }
-  })
-  // validateURL(bookmarkUrl.value)
-  // find the similar bookmarks based on current tab or bookmark url (hostname)
-  // if(urlObj.value) {
-  //   urlHostname.value = urlObj.value.hostname
-  //   if(urlHostname.value) {
-  //     // console.log('hostname', urlHostname.value);
-  //     const resultArr = await chrome.bookmarks.search(urlHostname.value)
-
-  //     resultArr.forEach(node => {
-  //       if(node.url && node.url !== bookmarkUrl.value) {
-  //         // filter out the folder nodes and the same bookmark node
-  //         similarBookmarks.value.push(node)
-  //       }
-  //     })
-  //     console.log(similarBookmarks.value);
-  //   }
-  // }
-})
+const similarBookmarks = ref(props.similarBookmarks);
+console.log(similarBookmarks.value);
+const showSimilarBookmarksModal = ref(false);
 
 /**
  * create bookmark
@@ -225,6 +131,7 @@ const createBookmark = async () => {
  * update bookmark
  */
 const updateBook = async () => {
+  if(!bookmarkId.value) return
   // if change the folder
   // first move the bookmark to the folder
   if(bookmarkFolderId.value !== props.bookmarkFolderIdOrigin || selectFolderType.value === 'new') {
@@ -238,7 +145,7 @@ const updateBook = async () => {
     }
     // then move the bookmark to the folder
     const bookmarkNode = await chrome.bookmarks.move(
-      props.bookmarkId,
+      bookmarkId.value,
       {
         parentId: folderNodeId
       }
@@ -248,7 +155,7 @@ const updateBook = async () => {
   // then update the bookmark content
   if(bookmarkTitle.value !== props.bookmarkTitleOrigin || bookmarkUrl.value !== props.bookmarkUrlOrigin) {
     await chrome.bookmarks.update(
-      props.bookmarkId,
+      bookmarkId.value,
       {
         title: bookmarkTitle.value,
         url: bookmarkUrl.value
@@ -264,9 +171,11 @@ const updateBook = async () => {
  * delete bookmark
  */
 const showDeleteBookmarkPrompt = ref(false)
+
 const deleteBookmark = async () => {
-  if(bookmarkState.value && props.bookmarkId) {
-    await chrome.bookmarks.remove(props.bookmarkId)
+  if(bookmarkState.value && bookmarkId.value) {
+    await chrome.bookmarks.remove(bookmarkId.value)
+    bookmarkId.value = null
     bookmarkState.value = false
   }
   showDeleteBookmarkPrompt.value = false
@@ -337,10 +246,12 @@ const deleteBookmark = async () => {
       </Suspense>
     </main>
 
+    <!-- delete prompt modal -->
     <Teleport to="body">
-      <div v-show="showDeleteBookmarkPrompt" class="fixed inset-0 flex justify-center items-center bg-black/50 backdrop-blur-sm" @wheel="$event.preventDefault()">
+      <div v-show="showDeleteBookmarkPrompt" class="fixed inset-0 z-50 flex justify-center items-center" @wheel="$event.preventDefault()" >
+        <div class="absolute inset-0 -z-10 bg-black/50 backdrop-blur-sm" @click="showDeleteBookmarkPrompt = false"></div>
         <div class="px-10 py-6 flex flex-col justify-center items-center gap-8 bg-white rounded-md">
-          <h2 class="text-xl font-bold text-gray-600">删除当前书签</h2>
+          <h2 class="text-xl font-bold text-gray-600 select-none">删除当前书签</h2>
           <div class="flex justify-center items-center gap-4">
             <button class="px-4 py-2 text-white bg-red-500 hover:bg-red-600 rounded transition-colors duration-300" @click="deleteBookmark">确认</button>
             <button class="px-4 py-2 text-white bg-gray-400 hover:bg-gray-500 rounded transition-colors duration-300" @click="showDeleteBookmarkPrompt=false">取消</button>
@@ -349,12 +260,14 @@ const deleteBookmark = async () => {
       </div>
     </Teleport>
 
+    <!-- similar bookmark modal -->
     <Teleport to="body">
-      <div v-show="showSimilarBookmarksModal" class="fixed inset-0 flex justify-center items-center bg-black/50 backdrop-blur-sm" @wheel="$event.preventDefault()">
+      <div v-show="showSimilarBookmarksModal" class="fixed inset-0 z-50 flex justify-center items-center" @wheel="$event.preventDefault()">
+        <div class="absolute inset-0 -z-10 bg-black/50 backdrop-blur-sm" @click="showSimilarBookmarksModal = false"></div>
         <div class="px-4 py-6 flex flex-col justify-center items-center gap-8 bg-white rounded-md">
-          <h2 class="p-4 text-lg font-bold border-b border-gray-600">相似书签</h2>
+          <h2 class="mb-4 pb-4 text-lg font-bold border-b border-gray-600">相似书签</h2>
           <div class="w-full flex justify-center items-center">
-            <ul class="w-full flex flex-col justify-center items-start">
+            <ul class="w-full flex flex-col justify-center items-start gap-2">
               <li v-for="node in similarBookmarks">{{ node.title }}</li>
             </ul>
           </div>

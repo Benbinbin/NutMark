@@ -30,23 +30,9 @@ onMounted(() => {
   })
 })
 
-let urlInputTimer = null;
 const urlInputHandler = (event) => {
   emit('update:bookmarkUrl', event.target.value)
   changeHeightHandler(event.target)
-
-  // if (urlInputTimer) {
-  //   clearTimeout(urlInputTimer)
-  // }
-  // urlInputTimer = setTimeout(() => {
-  //   const result = validateURL(props.bookmarkUrl)
-  //   if(result) {
-  //     setUrlValidation(true)
-  //     urlObj.value = result
-  //   } else {
-  //     setUrlValidation(false)
-  //   }
-  // }, 300)
 }
 
 /**
@@ -58,74 +44,59 @@ const setUrlValidation = inject('setUrlValidation')
 const validateURL = (url) => {
   try {
     if (url) {
-      const result = new URL(url)
-      return result
+      const result = new URL(url);
+      return result;
     } else {
-      return false
+      return false;
     }
   } catch (error) {
     console.log(error);
-    return false
+    return false;
   }
 }
 
-// watch the bookmark url change and check the validation
-// if(props.bookmarkUrl) {
-//   const result = validateURL(props.bookmarkUrl)
-//   if (result) {
-//     setUrlValidation(true)
-//     urlObj.value = result
-//   } else {
-//     setUrlValidation(false)
-//   }
-// }
-
 watch(() => props.bookmarkUrl, () => {
   if (props.bookmarkUrl) {
-    const result = validateURL(props.bookmarkUrl)
+    const result = validateURL(props.bookmarkUrl);
     if (result) {
-      setUrlValidation(true)
-      urlObj.value = result
+      setUrlValidation(true);
+      urlObj.value = result;
     } else {
-      setUrlValidation(false)
+      setUrlValidation(false);
     }
   }
 }, { immediate: true })
 
-
-
 /**
  * set bookmark url by one-click
  */
-const showURLBtn = ref(false)
+const showURLBtn = ref(false);
 
-// onMounted(async () => {
 if (urlValidation.value) {
-  const result = await chrome.storage.local.get(["showURLBtn"])
+  const result = await chrome.storage.local.get(["showURLBtn"]);
   if (result.showURLBtn) {
-    showURLBtn.value = result.showURLBtn
+    showURLBtn.value = result.showURLBtn;
   } else {
-    await chrome.storage.local.set({ showURLBtn: false })
+    await chrome.storage.local.set({ showURLBtn: false });
   }
 }
-// })
 
 const setShowURLBtnHandler = async () => {
-  showURLBtn.value = !showURLBtn.value
-  await chrome.storage.local.set({ showURLBtn: showURLBtn.value })
+  showURLBtn.value = !showURLBtn.value;
+  await chrome.storage.local.set({ showURLBtn: showURLBtn.value });
 }
 
 const hoverTarget = ref('')
 
 const setBookmarkURL = (target) => {
   if (!urlObj.value) return
-  const protocol = `${urlObj.value.protocol}//`
-  const userInfo = (urlObj.value.username && urlObj.value.password) ? `${urlObj.value.username}:${urlObj.value.password}@` : ''
-  const hostname = urlObj.value.hostname
-  const port = urlObj.value.port ? `:${urlObj.value.port}` : ''
-  const path = urlObj.value.pathname ? urlObj.value.pathname : ''
-  const search = urlObj.value.search ? urlObj.value.search : ''
-  const hash = urlObj.value.hash ? urlObj.value.hash : ''
+  const protocol = `${urlObj.value.protocol}//`;
+  const userInfo = (urlObj.value.username && urlObj.value.password) ? `${urlObj.value.username}:${urlObj.value.password}@` : '';
+  const hostname = urlObj.value.hostname;
+  const port = urlObj.value.port ? `:${urlObj.value.port}` : '';
+  const path = urlObj.value.pathname ? urlObj.value.pathname : '';
+  const search = urlObj.value.search ? urlObj.value.search : '';
+  const hash = urlObj.value.hash ? urlObj.value.hash : '';
 
   let newUrl = protocol + userInfo + hostname + port + path + search + hash;
   switch (target) {
@@ -142,28 +113,20 @@ const setBookmarkURL = (target) => {
       break;
   }
 
-  emit('update:bookmarkUrl', newUrl)
-
-  // const result = validateURL(props.bookmarkUrl)
-  // if(result) {
-  //   urlObj.value = result
-  //   setUrlValidation(true)
-  // } else {
-  //   setUrlValidation(false)
-  // }
+  emit('update:bookmarkUrl', newUrl);
 }
 
 /**
  * reset bookmark url
  */
 const resetBookmarkURL = () => {
-  emit('update:bookmarkUrl', props.tabUrl)
-  const result = validateURL(props.bookmarkUrl)
+  emit('update:bookmarkUrl', props.tabUrl);
+  const result = validateURL(props.bookmarkUrl);
   if (result) {
-    urlObj.value = result
-    setUrlValidation(true)
+    urlObj.value = result;
+    setUrlValidation(true);
   } else {
-    setUrlValidation(false)
+    setUrlValidation(false);
   }
 }
 </script>
