@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch, inject } from 'vue'
+import { ref, onMounted, watch, inject, nextTick } from 'vue'
 import { Icon as Iconify } from '@iconify/vue'
 
 const props = defineProps(['tabUrl', 'bookmarkUrl'])
@@ -7,8 +7,6 @@ const emit = defineEmits(['update:bookmarkUrl'])
 
 const urlObj = ref(null)
 
-const urlValidation = inject('urlValidation')
-const setUrlValidation = inject('setUrlValidation')
 /**
  * setting textarea height
  */
@@ -19,6 +17,12 @@ const changeHeightHandler = (dom) => {
 }
 
 onMounted(() => {
+  nextTick(() => {
+    if(bookmarkUrlDOM.value) {
+      changeHeightHandler(bookmarkUrlDOM.value)
+    }
+  })
+
   watch(showURLBtn, () => {
     if (!showURLBtn.value && bookmarkUrlDOM.value) {
       changeHeightHandler(bookmarkUrlDOM.value)
@@ -26,61 +30,85 @@ onMounted(() => {
   })
 })
 
-/**
- * check url validation
- */
-const validateURL = (url) => {
-  try {
-    if (url) {
-      const result = new URL(url)
-      // urlObj.value = result
-      // setUrlValidation(true)
-      return result
-    } else {
-      // setUrlValidation(false)
-      return false
-    }
-  } catch (error) {
-    console.log(error);
-    // setUrlValidation(false)
-    return false
-  }
-}
-
 let urlInputTimer = null;
 const urlInputHandler = (event) => {
   emit('update:bookmarkUrl', event.target.value)
   changeHeightHandler(event.target)
 
-  if (urlInputTimer) {
-    clearTimeout(urlInputTimer)
+  // if (urlInputTimer) {
+  //   clearTimeout(urlInputTimer)
+  // }
+  // urlInputTimer = setTimeout(() => {
+  //   const result = validateURL(props.bookmarkUrl)
+  //   if(result) {
+  //     setUrlValidation(true)
+  //     urlObj.value = result
+  //   } else {
+  //     setUrlValidation(false)
+  //   }
+  // }, 300)
+}
+
+/**
+ * check url validation
+ */
+const urlValidation = inject('urlValidation')
+const setUrlValidation = inject('setUrlValidation')
+
+const validateURL = (url) => {
+  try {
+    if (url) {
+      const result = new URL(url)
+      return result
+    } else {
+      return false
+    }
+  } catch (error) {
+    console.log(error);
+    return false
   }
-  urlInputTimer = setTimeout(() => {
+}
+
+// watch the bookmark url change and check the validation
+// if(props.bookmarkUrl) {
+//   const result = validateURL(props.bookmarkUrl)
+//   if (result) {
+//     setUrlValidation(true)
+//     urlObj.value = result
+//   } else {
+//     setUrlValidation(false)
+//   }
+// }
+
+watch(() => props.bookmarkUrl, () => {
+  if (props.bookmarkUrl) {
     const result = validateURL(props.bookmarkUrl)
-    if(result) {
+    if (result) {
       setUrlValidation(true)
       urlObj.value = result
     } else {
       setUrlValidation(false)
     }
-  }, 300)
-}
+  }
+}, { immediate: true })
+
+
 
 /**
  * set bookmark url by one-click
  */
 const showURLBtn = ref(false)
 
-onMounted(async () => {
-  if (urlValidation.value) {
-    const result = await chrome.storage.local.get(["showURLBtn"])
-    if (result.showURLBtn) {
-      showURLBtn.value = result.showURLBtn
-    } else {
-      await chrome.storage.local.set({ showURLBtn: false })
-    }
+// onMounted(async () => {
+if (urlValidation.value) {
+  const result = await chrome.storage.local.get(["showURLBtn"])
+  if (result.showURLBtn) {
+    showURLBtn.value = result.showURLBtn
+  } else {
+    await chrome.storage.local.set({ showURLBtn: false })
   }
-})
+}
+// })
 
 const setShowURLBtnHandler = async () => {
   showURLBtn.value = !showURLBtn.value
@@ -97,28 +125,32 @@ const setBookmarkURL = (target) => {
   const port = urlObj.value.port ? `:${urlObj.value.port}` : ''
   const path = urlObj.value.pathname ? urlObj.value.pathname : ''
   const search = urlObj.value.search ? urlObj.value.search : ''
+  const hash = urlObj.value.hash ? urlObj.value.hash : ''
 
+  let newUrl = protocol + userInfo + hostname + port + path + search + hash;
   switch (target) {
     case 'path':
-      emit('update:bookmarkUrl', protocol + userInfo + hostname + port)
+      newUrl = protocol + userInfo + hostname + port;
       break;
     case 'search':
-      emit('update:bookmarkUrl', protocol + userInfo + hostname + port + path)
+      newUrl = protocol + userInfo + hostname + port + path;
       break;
     case 'hash':
-      emit('update:bookmarkUrl', protocol + userInfo + hostname + port + path + search)
+      newUrl = protocol + userInfo + hostname + port + path + search;
       break;
     default:
       break;
   }
 
-  const result = validateURL(props.bookmarkUrl)
-  if(result) {
-    urlObj.value = result
-    setUrlValidation(true)
-  } else {
-    setUrlValidation(false)
-  }
+  emit('update:bookmarkUrl', newUrl)
+
+  // const result = validateURL(props.bookmarkUrl)
+  // if(result) {
+  //   urlObj.value = result
+  //   setUrlValidation(true)
+  // } else {
+  //   setUrlValidation(false)
+  // }
 }
 
 /**

@@ -16,6 +16,7 @@ const urlHostname = ref('');
 const similarBookmarks = ref([]);
 const showSimilarBookmarksModal = ref(false);
 
+const bookmarkState = ref(props.bookmarkState)
 /**
  * bookmark title
  */
@@ -43,6 +44,14 @@ const resetBookmarkTitle = () => {
  */
 const bookmarkUrl = ref('');
 
+// bookmark url init value
+if(props.bookmarkUrlOrigin) {
+  bookmarkUrl.value = props.bookmarkUrlOrigin;
+} else {
+  bookmarkUrl.value = props.tabUrl;
+}
+
+// url validation state
 const urlValidation = ref(true);
 const setUrlValidation = (state) => {
   urlValidation.value = state;
@@ -160,17 +169,17 @@ provide('setNewFolder', setNewFolder)
 /**
  * get init information
  */
-// onMounted(async () => {
+onMounted(async () => {
   // await setBookmarkParameters()
   // console.log(bookmarkUrl.value);
-  // nextTick(() => {
+  nextTick(() => {
     // if(bookmarkUrlDOM.value) {
     //   changeHeightHandler(bookmarkUrlDOM.value)
     // }
-    // if(bookmarkTitleDOM.value) {
-    //   changeHeightHandler(bookmarkTitleDOM.value)
-    // }
-  // })
+    if(bookmarkTitleDOM.value) {
+      changeHeightHandler(bookmarkTitleDOM.value)
+    }
+  })
   // validateURL(bookmarkUrl.value)
   // find the similar bookmarks based on current tab or bookmark url (hostname)
   // if(urlObj.value) {
@@ -188,7 +197,7 @@ provide('setNewFolder', setNewFolder)
   //     console.log(similarBookmarks.value);
   //   }
   // }
-// })
+})
 
 /**
  * create bookmark
@@ -218,7 +227,7 @@ const createBookmark = async () => {
 const updateBook = async () => {
   // if change the folder
   // first move the bookmark to the folder
-  if(bookmarkFolderIdOrigin.value !== bookmarkFolderId.value || selectFolderType.value === 'new') {
+  if(bookmarkFolderId.value !== props.bookmarkFolderIdOrigin || selectFolderType.value === 'new') {
     let folderNodeId;
     if(selectFolderType.value === 'new') {
       // create the new folder first
@@ -229,7 +238,7 @@ const updateBook = async () => {
     }
     // then move the bookmark to the folder
     const bookmarkNode = await chrome.bookmarks.move(
-      bookmarkId.value,
+      props.bookmarkId,
       {
         parentId: folderNodeId
       }
@@ -237,9 +246,9 @@ const updateBook = async () => {
   }
 
   // then update the bookmark content
-  if(bookmarkTitleOrigin.value !== bookmarkTitle.value || bookmarkUrlOrigin.value !== bookmarkUrl.value) {
+  if(bookmarkTitle.value !== props.bookmarkTitleOrigin || bookmarkUrl.value !== props.bookmarkUrlOrigin) {
     await chrome.bookmarks.update(
-      bookmarkId.value,
+      props.bookmarkId,
       {
         title: bookmarkTitle.value,
         url: bookmarkUrl.value
@@ -256,10 +265,9 @@ const updateBook = async () => {
  */
 const showDeleteBookmarkPrompt = ref(false)
 const deleteBookmark = async () => {
-  if(bookmarkId.value) {
-    await chrome.bookmarks.remove(bookmarkId.value)
+  if(bookmarkState.value && props.bookmarkId) {
+    await chrome.bookmarks.remove(props.bookmarkId)
     bookmarkState.value = false
-    bookmarkId.value = null
   }
   showDeleteBookmarkPrompt.value = false
 
@@ -284,7 +292,7 @@ const deleteBookmark = async () => {
           <Iconify icon="ic:round-delete" class="w-4 h-4"></Iconify>
           <span class="text-xs font-bold">删除</span>
         </button>
-        <button v-if="bookmarkState && (bookmarkTitleOrigin !== bookmarkTitle || bookmarkUrlOrigin !== bookmarkUrl || bookmarkFolderIdOrigin !== bookmarkFolderId || selectFolderType === 'new')"
+        <button v-if="bookmarkState && (bookmarkTitle !== props.bookmarkTitleOrigin || bookmarkUrl !== props.bookmarkUrlOrigin || bookmarkFolderIdOrigin !== bookmarkFolderId || selectFolderType === 'new')"
         :disabled="!bookmarkUrl || !urlValidation"
         class="group px-2 py-1.5 flex justify-center items-center gap-1 text-xs font-bold text-white bg-green-500 hover:bg-green-600 rounded transition-all duration-300"
         :class="(!bookmarkUrl || !urlValidation) ? 'opacity-10' : ''"
@@ -320,7 +328,9 @@ const deleteBookmark = async () => {
         </div>
       </section>
       <!-- bookmark url section -->
-      <BookmarkUrlSession :url-validation="urlValidation" :tab-url="tabUrl" v-model:bookmarkUrl="bookmarkUrl"></BookmarkUrlSession>
+      <Suspense>
+        <BookmarkUrlSession :url-validation="urlValidation" :tab-url="tabUrl" v-model:bookmarkUrl="bookmarkUrl"></BookmarkUrlSession>
+      </Suspense>
       <!-- bookmark folder section -->
       <Suspense>
         <BookmarkFolderSession></BookmarkFolderSession>

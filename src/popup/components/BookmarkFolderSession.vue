@@ -63,7 +63,7 @@ const getTreeId = async (folderId) => {
 // set node tree id (and bookmark folder id) init value
 if (bookmarkFolderId.value) {
   // if the tab has already bookmarked
-  nodeTreeId.value = await getTreeId(resultForBookmark.parentId);
+  nodeTreeId.value = await getTreeId(bookmarkFolderId.value);
 } else {
   // if the tab doesn't bookmark
   // get recent bookmark to set folder
