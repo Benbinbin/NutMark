@@ -128,11 +128,4 @@ const setNewFolderHandler = () => {
     background-color: #9ca3af;
   }
 }
-
-.line-camp-1 {
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 1;
-}
 </style>

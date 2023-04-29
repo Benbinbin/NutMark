@@ -9,6 +9,8 @@ import SearchFolder from './SearchFolder.vue';
  */
 const selectFolderType = inject('selectFolderType');
 
+const bookmarkOriginFolderId = inject('bookmarkOriginFolderId');
+const setBookmarkOriginFolderId = inject('setBookmarkOriginFolderId');
 const bookmarkFolderId = inject('bookmarkFolderId');
 const setBookmarkFolderId = inject('setBookmarkFolderId');
 

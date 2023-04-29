@@ -229,7 +229,7 @@ const showBookmark = inject('showBookmark')
       @click.exact="expand = true" @click.ctrl.exact="setNodeTreeId(props.rootId)">
         <Iconify :icon="props.rootTree.length > 0 ? 'ph:folder-fill' : 'ph:folder'" class="w-5 h-5" />
       </button>
-      <button class="pl-0.5 pr-1 py-1 text-sm break-all transition-colors duration-300"
+      <button class="pl-0.5 pr-1 py-1 text-sm break-words transition-colors duration-300"
       :class="(selectFolderType === 'old' && bookmarkFolderId === props.rootId) ? 'text-white bg-green-500 rounded-r' : 'text-gray-500 hover:text-green-600 hover:bg-green-100 rounded'"
       @click="setBookmarkFolderId(props.rootId)">{{ props.rootName }}</button>
     </div>
@@ -325,7 +325,7 @@ const showBookmark = inject('showBookmark')
               @click="addFolderNav(item.id, item.title, index)">
                 <Iconify :icon="item.children.length > 0 ? 'ph:folder-fill' : 'ph:folder'" class="shrink-0 w-4 h-4" />
               </button>
-              <button class="pl-0.5 pr-1.5 py-1.5 text-xs break-all transition-colors duration-300"
+              <button class="pl-0.5 pr-1.5 py-1.5 text-xs break-words transition-colors duration-300"
               :class="(selectFolderType === 'old' && bookmarkFolderId === item.id) ? 'text-white bg-green-500 rounded-r' : 'text-gray-500 hover:text-green-600 hover:bg-green-100 rounded'"
               @click="setBookmarkFolderId(item.id)">
                 {{ item.title || '未命名文件夹' }}
@@ -360,19 +360,5 @@ const showBookmark = inject('showBookmark')
   &::-webkit-scrollbar-thumb:hover {
     background-color: #9ca3af;
   }
-}
-
-.line-camp-1 {
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 1;
-}
-
-.line-camp-2 {
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
 }
 </style>

@@ -9,12 +9,12 @@ import App from './App.vue';
 let tabTitle = '';
 let tabUrl = '';
 
-// the bookmark origin info (if the tab has bookmarked)
+// the bookmark info (if the tab has bookmarked)
 let bookmarkState = false;
 let bookmarkId = null;
-let bookmarkTitleOrigin = '';
-let bookmarkUrlOrigin = '';
-let bookmarkFolderIdOrigin = '';
+let bookmarkTitle = '';
+let bookmarkUrl = '';
+let bookmarkFolderId = null;
 
 // the similar bookmarks
 let similarBookmarks = [];
@@ -33,12 +33,12 @@ const setBookmarkParameters = async () => {
     bookmarkState = true;
 
     bookmarkId = resultForBookmark.id;
-    bookmarkTitleOrigin = resultForBookmark.title;
-    bookmarkUrlOrigin = resultForBookmark.url;
-    bookmarkFolderIdOrigin = resultForBookmark.parentId;
+    bookmarkTitle = resultForBookmark.title;
+    bookmarkUrl = resultForBookmark.url;
+    bookmarkFolderId = resultForBookmark.parentId;
   }
   // get the similar bookmarks
-  const targetUrl = bookmarkUrlOrigin || tabUrl;
+  const targetUrl = bookmarkUrl || tabUrl;
   if(targetUrl) {
     try {
       const urlObj = new URL(targetUrl);
@@ -48,6 +48,15 @@ const setBookmarkParameters = async () => {
         similarBookmarks = nodesArr.filter(node => {
           return node.url && (node.url !== targetUrl)
         })
+        similarBookmarks.sort((a, b) => {
+          if(a.url.length < b.url.length) {
+            return -1
+          } else if(a.url.length > b.url.length) {
+            return 1
+          } else {
+            return 0
+          }
+        })
       }
     } catch (error) {
       console.log(error);
@@ -55,15 +64,15 @@ const setBookmarkParameters = async () => {
   }
 }
 
-setBookmarkParameters().then(() => {
-  createApp(App, {
-    tabTitle,
-    tabUrl,
-    bookmarkState,
-    bookmarkId,
-    bookmarkTitleOrigin,
-    bookmarkUrlOrigin,
-    bookmarkFolderIdOrigin,
-    similarBookmarks
-  }).mount('#app');
-})
+await setBookmarkParameters()
+
+createApp(App, {
+  tabTitle,
+  tabUrl,
+  bookmarkState,
+  bookmarkId,
+  bookmarkTitle,
+  bookmarkUrl,
+  bookmarkFolderId,
+  similarBookmarks
+}).mount('#app');

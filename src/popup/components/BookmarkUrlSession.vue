@@ -25,7 +25,9 @@ onMounted(() => {
 
   watch(showURLBtn, () => {
     if (!showURLBtn.value && bookmarkUrlDOM.value) {
-      changeHeightHandler(bookmarkUrlDOM.value)
+      nextTick(() => {
+        changeHeightHandler(bookmarkUrlDOM.value)
+      })
     }
   })
 })
@@ -217,8 +219,7 @@ const resetBookmarkURL = () => {
             <span v-if="urlObj.search" class="url-snippet" :class="(hoverTarget === 'path' || hoverTarget === 'search') ? 'text-red-600 line-through bg-red-100 border-red-300' : 'text-sky-600 border-sky-300'">{{ urlObj.search }}</span>
 
             <!-- Hash -->
-            <span v-if="urlObj.hash" class="url-snippet" :class="(hoverTarget === 'path' || hoverTarget === 'search' || hoverTarget === 'hash') ? 'text-red-600 line-through bg-red-100 border-red-300' : 'text-sky-600 border-sky-300'"
-              style="word-wrap: break-word;">{{ `${urlObj.hash}` }}</span>
+            <span v-if="urlObj.hash" class="url-snippet" :class="(hoverTarget === 'path' || hoverTarget === 'search' || hoverTarget === 'hash') ? 'text-red-600 line-through bg-red-100 border-red-300' : 'text-sky-600 border-sky-300'">{{ `${urlObj.hash}` }}</span>
           </code>
         </div>
       </div>
@@ -227,6 +228,15 @@ const resetBookmarkURL = () => {
 </template>
 
 <style lang="scss" scoped>
+#bookmark-url-textarea {
+  &::-webkit-scrollbar-thumb {
+    background-color: #bfdbfe;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: #60a5fa;
+  }
+}
+
 .url-btn-container {
   button {
     @apply px-2.5 py-1.5 flex justify-center items-center gap-1 rounded-md transition-colors duration-300;
@@ -246,7 +256,6 @@ const resetBookmarkURL = () => {
 }
 
 .url-snippet {
-  @apply max-w-full px-1 py-0.5 text-sm font-mono border rounded transition-colors duration-300;
-  word-wrap: break-word;
+  @apply max-w-full px-1 py-0.5 text-sm font-mono break-words border rounded transition-colors duration-300;
 }
 </style>

@@ -6,22 +6,26 @@ import { Icon as Iconify } from '@iconify/vue';
 import BookmarkUrlSession from './components/BookmarkUrlSession.vue';
 import BookmarkFolderSession from './components/BookmarkFolderSession.vue';
 
-const props = defineProps(['tabTitle', 'tabUrl', 'bookmarkState', 'bookmarkId', 'bookmarkTitleOrigin', 'bookmarkUrlOrigin', 'bookmarkFolderIdOrigin', 'similarBookmarks']);
+const props = defineProps(['tabTitle', 'tabUrl', 'bookmarkState', 'bookmarkId', 'bookmarkTitle', 'bookmarkUrl', 'bookmarkFolderId', 'similarBookmarks']);
 
-const bookmarkState = ref(props.bookmarkState)
+const bookmarkState = ref(props.bookmarkState);
 
 /**
  * bookmark id
  */
-const bookmarkId = ref(props.bookmarkId)
+const bookmarkId = ref(props.bookmarkId);
 
 /**
  * bookmark title
  */
+const bookmarkOriginTitle = ref('');
 const bookmarkTitle = ref('');
-if(props.bookmarkTitleOrigin) {
-  bookmarkTitle.value = props.bookmarkTitleOrigin;
+
+if(bookmarkState.value) {
+  bookmarkOriginTitle.value = props.bookmarkTitle;
+  bookmarkTitle.value = props.bookmarkTitle;
 } else {
+  bookmarkOriginTitle.value = props.tabTitle;
   bookmarkTitle.value = props.tabTitle;
 }
 
@@ -36,25 +40,28 @@ const changeHeightHandler = (dom) => {
 onMounted(async () => {
   nextTick(() => {
     if (bookmarkTitleDOM.value) {
-      changeHeightHandler(bookmarkTitleDOM.value)
+      changeHeightHandler(bookmarkTitleDOM.value);
     }
   })
 })
 
 // reset the bookmark title based on tab
 const resetBookmarkTitle = () => {
-  bookmarkTitle.value = props.tabTitle
+  bookmarkTitle.value = props.tabTitle;
 }
 
 /**
  * bookmark url
  */
+const bookmarkOriginUrl = ref('');
 const bookmarkUrl = ref('');
 
 // bookmark url init value
-if(props.bookmarkUrlOrigin) {
-  bookmarkUrl.value = props.bookmarkUrlOrigin;
+if(bookmarkState.value) {
+  bookmarkOriginUrl.value = props.bookmarkUrl;
+  bookmarkUrl.value = props.bookmarkUrl;
 } else {
+  bookmarkOriginUrl.value = props.tabUrl;
   bookmarkUrl.value = props.tabUrl;
 }
 
@@ -73,6 +80,11 @@ provide('setUrlValidation', setUrlValidation);
 const selectFolderType = ref('old');
 
 // old folder id
+const bookmarkOriginFolderId = ref(null)
+const setBookmarkOriginFolderId = (id) => {
+  bookmarkOriginFolderId.value = id;
+}
+
 const bookmarkFolderId = ref(null);
 const setBookmarkFolderId = (id) => {
   selectFolderType.value = 'old'
@@ -88,10 +100,13 @@ const setNewFolder = (newFolderObj) => {
 }
 
 // init the bookmarkFolderId if the tab has already bookmarked
-if (props.bookmarkFolderIdOrigin) {
-  setBookmarkFolderId(props.bookmarkFolderIdOrigin);
+if (bookmarkState.value) {
+  setBookmarkOriginFolderId(props.bookmarkFolderId)
+  setBookmarkFolderId(props.bookmarkFolderId);
 }
 
+provide('bookmarkOriginFolderId', bookmarkOriginFolderId)
+provide('setBookmarkOriginFolderId', setBookmarkOriginFolderId)
 provide('selectFolderType', selectFolderType)
 provide('bookmarkFolderId', bookmarkFolderId)
 provide('setBookmarkFolderId', setBookmarkFolderId)
@@ -134,7 +149,7 @@ const updateBook = async () => {
   if(!bookmarkId.value) return
   // if change the folder
   // first move the bookmark to the folder
-  if(bookmarkFolderId.value !== props.bookmarkFolderIdOrigin || selectFolderType.value === 'new') {
+  if(bookmarkFolderId.value !== bookmarkOriginFolderId.value || selectFolderType.value === 'new') {
     let folderNodeId;
     if(selectFolderType.value === 'new') {
       // create the new folder first
@@ -153,7 +168,7 @@ const updateBook = async () => {
   }
 
   // then update the bookmark content
-  if(bookmarkTitle.value !== props.bookmarkTitleOrigin || bookmarkUrl.value !== props.bookmarkUrlOrigin) {
+  if(bookmarkTitle.value !== bookmarkOriginTitle.value || bookmarkUrl.value !== bookmarkOriginUrl.value) {
     await chrome.bookmarks.update(
       bookmarkId.value,
       {
@@ -201,7 +216,7 @@ const deleteBookmark = async () => {
           <Iconify icon="ic:round-delete" class="w-4 h-4"></Iconify>
           <span class="text-xs font-bold">删除</span>
         </button>
-        <button v-if="bookmarkState && (bookmarkTitle !== props.bookmarkTitleOrigin || bookmarkUrl !== props.bookmarkUrlOrigin || bookmarkFolderIdOrigin !== bookmarkFolderId || selectFolderType === 'new')"
+        <button v-if="bookmarkState && (bookmarkTitle !== bookmarkOriginTitle || bookmarkUrl !== bookmarkOriginUrl || bookmarkOriginFolderId !== bookmarkFolderId || selectFolderType === 'new')"
         :disabled="!bookmarkUrl || !urlValidation"
         class="group px-2 py-1.5 flex justify-center items-center gap-1 text-xs font-bold text-white bg-green-500 hover:bg-green-600 rounded transition-all duration-300"
         :class="(!bookmarkUrl || !urlValidation) ? 'opacity-10' : ''"
@@ -233,7 +248,7 @@ const deleteBookmark = async () => {
           </button>
         </div>
         <div class="textarea-container border-gray-300 focus-within:border-gray-400 shadow-sm shadow-gray-100">
-          <textarea ref="bookmarkTitleDOM" name="bookmark name" id="bookmark-name" class="text-gray-700 placeholder:text-gray-300" placeholder="请输入书签的名称" v-model="bookmarkTitle" @input="changeHeightHandler"></textarea>
+          <textarea ref="bookmarkTitleDOM" name="bookmark title" id="bookmark-title-textarea" class="text-gray-700 placeholder:text-gray-300" placeholder="请输入书签的名称" v-model="bookmarkTitle" @input="changeHeightHandler($event.target)"></textarea>
         </div>
       </section>
       <!-- bookmark url section -->
@@ -248,7 +263,7 @@ const deleteBookmark = async () => {
 
     <!-- delete prompt modal -->
     <Teleport to="body">
-      <div v-show="showDeleteBookmarkPrompt" class="fixed inset-0 z-50 flex justify-center items-center" @wheel="$event.preventDefault()" >
+      <div v-if="showDeleteBookmarkPrompt" class="fixed inset-0 z-50 flex justify-center items-center" @wheel="$event.preventDefault()" >
         <div class="absolute inset-0 -z-10 bg-black/50 backdrop-blur-sm" @click="showDeleteBookmarkPrompt = false"></div>
         <div class="px-10 py-6 flex flex-col justify-center items-center gap-8 bg-white rounded-md">
           <h2 class="text-xl font-bold text-gray-600 select-none">删除当前书签</h2>
@@ -262,13 +277,22 @@ const deleteBookmark = async () => {
 
     <!-- similar bookmark modal -->
     <Teleport to="body">
-      <div v-show="showSimilarBookmarksModal" class="fixed inset-0 z-50 flex justify-center items-center" @wheel="$event.preventDefault()">
+      <div v-if="showSimilarBookmarksModal" class="fixed inset-0 z-50 flex justify-center items-center" @wheel="$event.preventDefault()">
         <div class="absolute inset-0 -z-10 bg-black/50 backdrop-blur-sm" @click="showSimilarBookmarksModal = false"></div>
-        <div class="px-4 py-6 flex flex-col justify-center items-center gap-8 bg-white rounded-md">
-          <h2 class="mb-4 pb-4 text-lg font-bold border-b border-gray-600">相似书签</h2>
-          <div class="w-full flex justify-center items-center">
-            <ul class="w-full flex flex-col justify-center items-start gap-2">
-              <li v-for="node in similarBookmarks">{{ node.title }}</li>
+        <div class="max-w-[600px] p-4 flex flex-col justify-center items-center gap-6 bg-white rounded-md">
+          <h2 class="pb-2 text-lg text-gray-600 font-bold border-b border-gray-600 select-none">相似书签列表</h2>
+          <div class="w-full max-h-[400px] overflow-y-auto flex justify-center items-center">
+            <ul class="w-full flex flex-col justify-center items-start gap-4">
+              <li v-for="node in similarBookmarks" :key="node.id" class="w-full">
+                <button class="group w-full px-3 py-2 flex flex-col items-start gap-1 text-gray-500 hover:bg-orange-100 rounded transition-colors duration-300">
+                  <div class="flex justify-center items-center gap-2">
+                    <!-- <img v-if="node.url" :src="useGetFaviconURL(node.url)" alt="bookmark favicon" class="shrink-0 w-4 h-4"> -->
+                    <Iconify icon="ph:planet-fill" class="shrink-0 w-4 h-4 text-purple-500"></Iconify>
+                    <span class="line-camp-1 text-base text-start group-hover:text-orange-400 font-bold transition-colors duration-300">{{ node.title }}</span>
+                  </div>
+                  <span class="max-w-full pl-6 text-sm text-start text-blue-400 group-hover:text-orange-300 break-words transition-colors duration-300">{{ node.url }}</span>
+                </button>
+              </li>
             </ul>
           </div>
         </div>
@@ -298,23 +322,22 @@ section {
         border-radius: 3px;
       }
     }
-    #bookmark-name {
-      &::-webkit-scrollbar-thumb {
-        background-color: #d1d5db;
-      }
-      &::-webkit-scrollbar-thumb:hover {
-        background-color: #9ca3af;
-      }
-    }
-
-    #bookmark-url-textarea {
-      &::-webkit-scrollbar-thumb {
-        background-color: #bfdbfe;
-      }
-      &::-webkit-scrollbar-thumb:hover {
-        background-color: #60a5fa;
-      }
-    }
   }
+}
+
+#bookmark-title-textarea {
+  &::-webkit-scrollbar-thumb {
+    background-color: #d1d5db;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: #9ca3af;
+  }
+}
+
+.line-camp-1 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
 }
 </style>
