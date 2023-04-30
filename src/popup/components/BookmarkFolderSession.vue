@@ -96,7 +96,7 @@ if (bookmarkFolderId.value) {
 
 watch(bookmarkOriginFolderId, async () => {
   nodeTreeId.value = await getTreeId(bookmarkOriginFolderId.value);
-})
+}, { immediate: true })
 
 // watch the nodeTreeId change and get the node tree object
 watch(nodeTreeId, async () => {

@@ -1,6 +1,5 @@
 <script setup>
 import { onMounted, ref, provide, nextTick } from 'vue';
-// import { useCheckBookmarkState } from '@/composables/checkBookmarkState';
 import { useGetFaviconURL } from '@/composables/getFaviconURL';
 import { Icon as Iconify } from '@iconify/vue';
 import BookmarkUrlSession from './components/BookmarkUrlSession.vue';
@@ -9,15 +8,12 @@ import BookmarkFolderSession from './components/BookmarkFolderSession.vue';
 const props = defineProps([
   'tabTitle',
   'tabUrl',
-  // 'bookmarkState',
   'bookmarkId',
   'bookmarkTitle',
   'bookmarkUrl',
   'bookmarkFolderId',
   'similarBookmarks'
 ]);
-
-// const bookmarkState = ref(props.bookmarkState);
 
 /**
  * bookmark id
@@ -127,12 +123,9 @@ provide('setNewFolder', setNewFolder)
  * similar bookmarks
  */
 const similarBookmarks = ref(props.similarBookmarks);
-console.log(similarBookmarks.value);
 const showSimilarBookmarksModal = ref(false);
 
 const setBookmarkInfo = (bookmarkNode) => {
-  console.log(bookmarkNode);
-
   // set bookmark id
   bookmarkId.value = bookmarkNode.id;
 
@@ -150,6 +143,8 @@ const setBookmarkInfo = (bookmarkNode) => {
 
   showSimilarBookmarksModal.value = false;
 }
+
+provide('setBookmarkInfo', setBookmarkInfo)
 
 /**
  * create bookmark
@@ -190,7 +185,7 @@ const updateBook = async () => {
       folderNodeId = bookmarkFolderId.value
     }
     // then move the bookmark to the folder
-    const bookmarkNode = await chrome.bookmarks.move(
+    await chrome.bookmarks.move(
       bookmarkId.value,
       {
         parentId: folderNodeId
@@ -222,7 +217,6 @@ const deleteBookmark = async () => {
   if(bookmarkId.value) {
     await chrome.bookmarks.remove(bookmarkId.value)
     bookmarkId.value = null
-    // bookmarkState.value = false
   }
   showDeleteBookmarkPrompt.value = false
 
@@ -284,7 +278,7 @@ const deleteBookmark = async () => {
       </section>
       <!-- bookmark url section -->
       <Suspense>
-        <BookmarkUrlSession :url-validation="urlValidation" :tab-url="tabUrl" v-model:bookmarkUrl="bookmarkUrl"></BookmarkUrlSession>
+        <BookmarkUrlSession :bookmark-id="bookmarkId" v-model:bookmarkUrl="bookmarkUrl"></BookmarkUrlSession>
       </Suspense>
       <!-- bookmark folder section -->
       <Suspense>

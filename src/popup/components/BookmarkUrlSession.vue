@@ -1,8 +1,9 @@
 <script setup>
 import { ref, onMounted, watch, inject, nextTick } from 'vue';
 import { Icon as Iconify } from '@iconify/vue';
+import { useCheckBookmarkState } from '@/composables/checkBookmarkState';
 
-const props = defineProps(['tabUrl', 'bookmarkUrl']);
+const props = defineProps(['bookmarkId', 'bookmarkUrl']);
 const emit = defineEmits(['update:bookmarkUrl']);
 
 const urlObj = ref(null);
@@ -38,7 +39,7 @@ const urlInputHandler = (event) => {
 }
 
 /**
- * check url validation
+ * check url validation and bookmark state
  */
 const urlValidation = inject('urlValidation');
 const setUrlValidation = inject('setUrlValidation');
@@ -57,14 +58,34 @@ const validateURL = (url) => {
   }
 }
 
-watch(() => props.bookmarkUrl, () => {
+const urlBookmarkNode = ref(null);
+const setBookmarkInfo = inject('setBookmarkInfo')
+
+const setBookmarkInfoHandler = () => {
+  if(urlBookmarkNode.value) {
+    setBookmarkInfo(urlBookmarkNode.value)
+  }
+}
+
+const checkUrlBookmarkState = async (url) => {
+  const resultForUrlBookmarkState = await useCheckBookmarkState(url);
+  if (resultForUrlBookmarkState) {
+    urlBookmarkNode.value = resultForUrlBookmarkState;
+  } else {
+    urlBookmarkNode.value = null;
+  }
+}
+
+watch(() => props.bookmarkUrl, async () => {
   if (props.bookmarkUrl) {
     const result = validateURL(props.bookmarkUrl);
     if (result) {
       setUrlValidation(true);
       urlObj.value = result;
+      await checkUrlBookmarkState(props.bookmarkUrl)
     } else {
       setUrlValidation(false);
+      urlBookmarkNode.value = null;
     }
   }
 }, { immediate: true })
@@ -143,14 +164,19 @@ const resetBookmarkURL = () => {
           <Iconify icon="ph:link-fill" class="section-title-icon"></Iconify>
           <span class="text-base font-semibold">链接</span>
         </p>
-        <div v-show="!urlValidation"
-          class="w-fit px-1.5 py-1 flex justify-center items-center gap-1 bg-red-100 scale-90 origin-left rounded-full">
+        <div v-if="!urlValidation"
+          class="w-fit px-2 py-1 flex justify-center items-center gap-1 bg-red-100 scale-90 origin-left rounded-full">
           <span class="relative flex h-2.5 w-2.5">
             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
             <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
           </span>
           <span class="text-xs text-red-500">请输入格式正确的链接</span>
         </div>
+        <button v-if="urlBookmarkNode && urlBookmarkNode.id !== props.bookmarkId" class="w-fit pl-2 pr-2.5 py-1 flex justify-center items-center gap-1 text-amber-600 hover:text-amber-700 bg-amber-100 hover:bg-amber-200 scale-90 origin-left rounded-full transition-colors duration-300"
+        @click="setBookmarkInfoHandler">
+          <img src="@/assets/nut-mark.svg" alt="nut mark icon" class="w-4 h-4">
+          <span class="text-xs">存在书签与该 URL 相匹配</span>
+        </button>
       </div>
       <div class="flex justify-center items-center gap-1">
         <button v-show="urlValidation"
@@ -159,7 +185,7 @@ const resetBookmarkURL = () => {
           @click="setShowURLBtnHandler">
           <Iconify icon="ph:cursor-click" class="w-4 h-4"></Iconify>
         </button>
-        <button v-show="props.tabUrl !== props.bookmarkUrl"
+        <button v-show="bookmarkOriginUrl !== props.bookmarkUrl"
           class="p-1.5 text-sky-200 hover:text-sky-500 active:text-white hover:bg-sky-100 active:bg-sky-500 rounded-full transition-colors duration-300"
           @click="resetBookmarkURL">
           <Iconify icon="ph:arrow-counter-clockwise" class="w-4 h-4"></Iconify>
