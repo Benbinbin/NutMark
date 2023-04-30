@@ -66,15 +66,15 @@ const setBookmarkParameters = async () => {
   }
 }
 
-await setBookmarkParameters()
-
-createApp(App, {
-  tabTitle,
-  tabUrl,
-  // bookmarkState,
-  bookmarkId,
-  bookmarkTitle,
-  bookmarkUrl,
-  bookmarkFolderId,
-  similarBookmarks
-}).mount('#app');
+setBookmarkParameters().then(() => {
+  createApp(App, {
+    tabTitle,
+    tabUrl,
+    // bookmarkState,
+    bookmarkId,
+    bookmarkTitle,
+    bookmarkUrl,
+    bookmarkFolderId,
+    similarBookmarks
+  }).mount('#app');
+})

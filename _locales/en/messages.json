@@ -1,0 +1,86 @@
+{
+  "popup_header_show_similar_bookmarks_btn_title": {
+    "message": "click the button to show the similar bookmarks list",
+    "description": "the advisory information related to the button of showing similar bookmarks"
+  },
+  "popup_header_bookmark_state_saved": {
+    "message": "Saved",
+    "description": "the bookmark state is saved"
+  },
+  "popup_header_bookmark_state_unsaved": {
+    "message": "Unsaved",
+    "description": "the bookmark state is unsaved"
+  },
+  "popup_header_delete_bookmarks_btn_content": {
+    "message": "Delete",
+    "description": "the content of the delete bookmark button"
+  },
+  "popup_header_delete_bookmarks_btn_title": {
+    "message": "click the button to delete bookmark",
+    "description": "the advisory information related to the button of delete bookmark"
+  },
+  "popup_header_update_bookmarks_btn_content": {
+    "message": "Update",
+    "description": "the content of the update bookmark button"
+  },
+  "popup_header_update_bookmarks_btn_content_hover": {
+    "message": "Save",
+    "description": "the content of the update bookmark button when hover"
+  },
+  "popup_header_update_bookmarks_btn_title": {
+    "message": "click the button to update bookmark",
+    "description": "the advisory information related to the button of update bookmark"
+  },
+  "popup_header_create_bookmarks_btn_content": {
+    "message": "Save",
+    "description": "the content of the create bookmark button"
+  },
+  "popup_header_create_bookmarks_btn_title": {
+    "message": "click the button to create a bookmark",
+    "description": "the advisory information related to the button of create bookmark"
+  },
+  "popup_main_bookmark_title_section_name": {
+    "message": "Name",
+    "description": "the title of the bookmark name section"
+  },
+  "popup_main_bookmark_title_section_reset_btn_title": {
+    "message": "click the button to reset bookmark name",
+    "description": "the advisory information related to the button of reset bookmark name"
+  },
+  "popup_main_bookmark_title_section_textarea_placeholder": {
+    "message": "Please enter a name for the bookmark",
+    "description": "the placeholder for the textarea element in bookmark name section"
+  },
+  "popup_modal_delete_bookmark_prompt_title": {
+    "message": "Delete the Bookmark",
+    "description": "the title of the delete bookmark prompt modal"
+  },
+  "popup_modal_delete_bookmark_prompt_confirm_btn_title": {
+    "message": "click the button to confirm",
+    "description": "the title of the confirm button"
+  },
+  "popup_modal_delete_bookmark_prompt_confirm_btn_content": {
+    "message": "Confirm",
+    "description": "the content of the confirm button"
+  },
+  "popup_modal_delete_bookmark_prompt_cancel_btn_title": {
+    "message": "click the button to cancel",
+    "description": "the title of the cancel button"
+  },
+  "popup_modal_delete_bookmark_prompt_cancel_btn_content": {
+    "message": "Cancel",
+    "description": "the content of the cancel button"
+  },
+  "popup_modal_similar_bookmarks_list_title": {
+    "message": "Similar Bookmarks List",
+    "description": "the title of the similar bookmarks list modal"
+  },
+  "popup_modal_similar_bookmarks_list_btn_title": {
+    "message": "click the button to edit the bookmark information",
+    "description": "the advisory information related to the button of similar bookmark list entry"
+  },
+  "bookmark_favicon_img_alt": {
+    "message": "bookmark icon",
+    "description": "the text description of the bookmark icon"
+  }
+}

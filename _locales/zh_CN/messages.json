@@ -1,0 +1,86 @@
+{
+  "popup_header_show_similar_bookmarks_btn_title": {
+    "message": "点击按钮显示相似书签列表",
+    "description": "有关显示相似书签按钮的提示信息"
+  },
+  "popup_header_bookmark_state_saved": {
+    "message": "已保存",
+    "description": "书签状态已保存"
+  },
+  "popup_header_bookmark_state_unsaved": {
+    "message": "未保存",
+    "description": "书签状态未保存"
+  },
+  "popup_header_delete_bookmarks_btn_content": {
+    "message": "删除",
+    "description": "删除书签按钮的内容"
+  },
+  "popup_header_delete_bookmarks_btn_title": {
+    "message": "点击按钮删除书签",
+    "description": "有关删除书签按钮的提示信息"
+  },
+  "popup_header_update_bookmarks_btn_content": {
+    "message": "更新",
+    "description": "更新书签按钮的内容"
+  },
+  "popup_header_update_bookmarks_btn_content_hover": {
+    "message": "保存",
+    "description": "鼠标悬停在更新书签按钮上时的内容"
+  },
+  "popup_header_update_bookmarks_btn_title": {
+    "message": "点击按钮更新书签",
+    "description": "有关更新书签按钮的提示信息"
+  },
+  "popup_header_create_bookmarks_btn_content": {
+    "message": "保存",
+    "description": "创建书签按钮的内容"
+  },
+  "popup_header_create_bookmarks_btn_title": {
+    "message": "点击按钮创建书签",
+    "description": "有关创建书签按钮的提示信息"
+  },
+  "popup_main_bookmark_title_section_name": {
+    "message": "名称",
+    "description": "书签名称部分的标题"
+  },
+  "popup_main_bookmark_title_section_reset_btn_title": {
+    "message": "点击按钮重置书签名称",
+    "description": "有关重置书签名称按钮的提示信息"
+  },
+  "popup_main_bookmark_title_section_textarea_placeholder": {
+    "message": "请输入书签名称",
+    "description": "书签名称部分文本框的占位符"
+  },
+  "popup_modal_delete_bookmark_prompt_title": {
+    "message": "删除书签",
+    "description": "删除书签提示模态框的标题"
+  },
+  "popup_modal_delete_bookmark_prompt_confirm_btn_title": {
+    "message": "点击按钮确认",
+    "description": "确认按钮的标题"
+  },
+  "popup_modal_delete_bookmark_prompt_confirm_btn_content": {
+    "message": "确认",
+    "description": "确认按钮的内容"
+  },
+  "popup_modal_delete_bookmark_prompt_cancel_btn_title": {
+    "message": "点击按钮取消",
+    "description": "取消按钮的标题"
+  },
+  "popup_modal_delete_bookmark_prompt_cancel_btn_content": {
+    "message": "取消",
+    "description": "取消按钮的内容"
+  },
+  "popup_modal_similar_bookmarks_list_title": {
+    "message": "相似书签列表",
+    "description": "相似书签列表模态框的标题"
+  },
+  "popup_modal_similar_bookmarks_list_btn_title": {
+    "message": "点击按钮编辑书签信息",
+    "description": "相似书签列表条目的提示信息"
+  },
+  "bookmark_favicon_img_alt": {
+    "message": "书签图标",
+    "description": "书签图标的文本描述"
+  }
+}
