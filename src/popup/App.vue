@@ -6,9 +6,18 @@ import { Icon as Iconify } from '@iconify/vue';
 import BookmarkUrlSession from './components/BookmarkUrlSession.vue';
 import BookmarkFolderSession from './components/BookmarkFolderSession.vue';
 
-const props = defineProps(['tabTitle', 'tabUrl', 'bookmarkState', 'bookmarkId', 'bookmarkTitle', 'bookmarkUrl', 'bookmarkFolderId', 'similarBookmarks']);
+const props = defineProps([
+  'tabTitle',
+  'tabUrl',
+  // 'bookmarkState',
+  'bookmarkId',
+  'bookmarkTitle',
+  'bookmarkUrl',
+  'bookmarkFolderId',
+  'similarBookmarks'
+]);
 
-const bookmarkState = ref(props.bookmarkState);
+// const bookmarkState = ref(props.bookmarkState);
 
 /**
  * bookmark id
@@ -21,16 +30,17 @@ const bookmarkId = ref(props.bookmarkId);
 const bookmarkOriginTitle = ref('');
 const bookmarkTitle = ref('');
 
-if(bookmarkState.value) {
-  bookmarkOriginTitle.value = props.bookmarkTitle;
+// init value of bookmark title
+bookmarkOriginTitle.value = props.tabTitle;
+if(bookmarkId.value) {
   bookmarkTitle.value = props.bookmarkTitle;
 } else {
-  bookmarkOriginTitle.value = props.tabTitle;
   bookmarkTitle.value = props.tabTitle;
 }
 
-const bookmarkTitleDOM = ref(null);
 // change textarea input box height
+const bookmarkTitleDOM = ref(null);
+
 const changeHeightHandler = (dom) => {
   dom.style.height = 'auto';
   dom.style.height = `${dom.scrollHeight}px`;
@@ -47,21 +57,21 @@ onMounted(async () => {
 
 // reset the bookmark title based on tab
 const resetBookmarkTitle = () => {
-  bookmarkTitle.value = props.tabTitle;
+  bookmarkTitle.value = bookmarkOriginTitle.value;
 }
 
 /**
  * bookmark url
  */
 const bookmarkOriginUrl = ref('');
+provide('bookmarkOriginUrl', bookmarkOriginUrl)
 const bookmarkUrl = ref('');
 
-// bookmark url init value
-if(bookmarkState.value) {
-  bookmarkOriginUrl.value = props.bookmarkUrl;
+// init value of bookmark url
+bookmarkOriginUrl.value = props.tabUrl;
+if(bookmarkId.value) {
   bookmarkUrl.value = props.bookmarkUrl;
 } else {
-  bookmarkOriginUrl.value = props.tabUrl;
   bookmarkUrl.value = props.tabUrl;
 }
 
@@ -100,7 +110,7 @@ const setNewFolder = (newFolderObj) => {
 }
 
 // init the bookmarkFolderId if the tab has already bookmarked
-if (bookmarkState.value) {
+if (bookmarkId.value) {
   setBookmarkOriginFolderId(props.bookmarkFolderId)
   setBookmarkFolderId(props.bookmarkFolderId);
 }
@@ -119,6 +129,27 @@ provide('setNewFolder', setNewFolder)
 const similarBookmarks = ref(props.similarBookmarks);
 console.log(similarBookmarks.value);
 const showSimilarBookmarksModal = ref(false);
+
+const setBookmarkInfo = (bookmarkNode) => {
+  console.log(bookmarkNode);
+
+  // set bookmark id
+  bookmarkId.value = bookmarkNode.id;
+
+  // set bookmark title
+  bookmarkTitle.value = bookmarkNode.title;
+  bookmarkOriginTitle.value = bookmarkNode.title;
+
+  // set bookmark url
+  bookmarkUrl.value = bookmarkNode.url;
+  bookmarkOriginUrl.value = bookmarkNode.url;
+
+  // set bookmark folder
+  setBookmarkFolderId(bookmarkNode.parentId);
+  setBookmarkOriginFolderId(bookmarkNode.parentId);
+
+  showSimilarBookmarksModal.value = false;
+}
 
 /**
  * create bookmark
@@ -188,10 +219,10 @@ const updateBook = async () => {
 const showDeleteBookmarkPrompt = ref(false)
 
 const deleteBookmark = async () => {
-  if(bookmarkState.value && bookmarkId.value) {
+  if(bookmarkId.value) {
     await chrome.bookmarks.remove(bookmarkId.value)
     bookmarkId.value = null
-    bookmarkState.value = false
+    // bookmarkState.value = false
   }
   showDeleteBookmarkPrompt.value = false
 
@@ -204,19 +235,19 @@ const deleteBookmark = async () => {
   <div>
     <header class="px-2 py-2 flex justify-between sticky top-0 inset-x-0 bg-gray-50 border-b shadow">
       <button :disabled="similarBookmarks.length===0" class="px-3 py-1 flex justify-center items-center gap-1 border rounded-full transition-colors duration-300"
-      :class="bookmarkState ? 'bg-amber-100/60 hover:bg-amber-200 border-amber-200 text-amber-500 hover:text-amber-600' : 'bg-emerald-100/60 hover:bg-emerald-200 text-emerald-500 border-emerald-200 hover:text-emerald-600'"
+      :class="bookmarkId ? 'bg-amber-100/60 hover:bg-amber-200 border-amber-200 text-amber-500 hover:text-amber-600' : 'bg-emerald-100/60 hover:bg-emerald-200 text-emerald-500 border-emerald-200 hover:text-emerald-600'"
       @click="showSimilarBookmarksModal=true">
         <img v-if="bookmarkUrl" :src="useGetFaviconURL(bookmarkUrl)" alt="bookmark icon" class="w-4 h-4">
         <Iconify v-else icon="ph:planet-fill" class="w-4 h-4 text-purple-500"></Iconify>
-        <span class="text-xs font-bold">{{ bookmarkState ? '已收藏' : '未收藏' }}</span>
+        <span class="text-xs font-bold">{{ bookmarkId ? '已收藏' : '未收藏' }}</span>
         <Iconify v-if="similarBookmarks.length > 0" icon="fluent:more-circle-32-filled" class="w-4 h-4"></Iconify>
       </button>
       <div class="flex justify-center items-center gap-2">
-        <button v-if="bookmarkState" class="px-2 py-1.5 flex justify-center items-center gap-1 text-white bg-red-500 hover:bg-red-600 rounded transition-colors duration-300" @click="showDeleteBookmarkPrompt=true">
+        <button v-if="bookmarkId" class="px-2 py-1.5 flex justify-center items-center gap-1 text-white bg-red-500 hover:bg-red-600 rounded transition-colors duration-300" @click="showDeleteBookmarkPrompt=true">
           <Iconify icon="ic:round-delete" class="w-4 h-4"></Iconify>
           <span class="text-xs font-bold">删除</span>
         </button>
-        <button v-if="bookmarkState && (bookmarkTitle !== bookmarkOriginTitle || bookmarkUrl !== bookmarkOriginUrl || bookmarkOriginFolderId !== bookmarkFolderId || selectFolderType === 'new')"
+        <button v-if="bookmarkId && (bookmarkTitle !== bookmarkOriginTitle || bookmarkUrl !== bookmarkOriginUrl || bookmarkOriginFolderId !== bookmarkFolderId || selectFolderType === 'new')"
         :disabled="!bookmarkUrl || !urlValidation"
         class="group px-2 py-1.5 flex justify-center items-center gap-1 text-xs font-bold text-white bg-green-500 hover:bg-green-600 rounded transition-all duration-300"
         :class="(!bookmarkUrl || !urlValidation) ? 'opacity-10' : ''"
@@ -225,7 +256,7 @@ const deleteBookmark = async () => {
           <span class="group-hover:hidden">有更新</span>
           <span class="w-[36px] hidden group-hover:inline-block">保存</span>
         </button>
-        <button v-if="!bookmarkState" :disabled="!bookmarkUrl || !urlValidation" class="px-2 py-1.5 flex justify-center items-center gap-1 text-xs font-bold text-white bg-green-500 hover:bg-green-600 rounded transition-all duration-300"
+        <button v-if="!bookmarkId" :disabled="!bookmarkUrl || !urlValidation" class="px-2 py-1.5 flex justify-center items-center gap-1 text-xs font-bold text-white bg-green-500 hover:bg-green-600 rounded transition-all duration-300"
         :class="(!bookmarkUrl || !urlValidation) ? 'opacity-10' : ''"
         @click="createBookmark">
             <Iconify icon="ic:round-save" class="w-4 h-4"></Iconify>
@@ -284,7 +315,8 @@ const deleteBookmark = async () => {
           <div class="w-full max-h-[400px] overflow-y-auto flex justify-center items-center">
             <ul class="w-full flex flex-col justify-center items-start gap-4">
               <li v-for="node in similarBookmarks" :key="node.id" class="w-full">
-                <button class="group w-full px-3 py-2 flex flex-col items-start gap-1 text-gray-500 hover:bg-orange-100 rounded transition-colors duration-300">
+                <button class="group w-full px-3 py-2 flex flex-col items-start gap-1 text-gray-500 hover:bg-orange-100 rounded transition-colors duration-300"
+                @click="setBookmarkInfo(node)">
                   <div class="flex justify-center items-center gap-2">
                     <!-- <img v-if="node.url" :src="useGetFaviconURL(node.url)" alt="bookmark favicon" class="shrink-0 w-4 h-4"> -->
                     <Iconify icon="ph:planet-fill" class="shrink-0 w-4 h-4 text-purple-500"></Iconify>

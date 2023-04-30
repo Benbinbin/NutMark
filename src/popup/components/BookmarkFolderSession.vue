@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, provide, inject } from 'vue';
+import { ref, watch, provide, inject, nextTick } from 'vue';
 import { Icon as Iconify } from '@iconify/vue';
 import FolderGrid from './FolderGrid.vue';
 import SearchFolder from './SearchFolder.vue';
@@ -11,8 +11,13 @@ const selectFolderType = inject('selectFolderType');
 
 const bookmarkOriginFolderId = inject('bookmarkOriginFolderId');
 const setBookmarkOriginFolderId = inject('setBookmarkOriginFolderId');
+
 const bookmarkFolderId = inject('bookmarkFolderId');
 const setBookmarkFolderId = inject('setBookmarkFolderId');
+
+const resetBookmarkFolder = () => {
+  setBookmarkFolderId(bookmarkOriginFolderId.value)
+}
 
 const newFolder = inject('newFolder');
 const setNewFolder = inject('setNewFolder');
@@ -62,10 +67,11 @@ const getTreeId = async (folderId) => {
   return targetId;
 }
 
-// set node tree id (and bookmark folder id) init value
+// set node tree id init value
+// (and also set the init value for folder id based on the recent bookmark if the tab doesn't bookmarked)
 if (bookmarkFolderId.value) {
   // if the tab has already bookmarked
-  nodeTreeId.value = await getTreeId(bookmarkFolderId.value);
+  // nodeTreeId.value = await getTreeId(bookmarkFolderId.value);
 } else {
   // if the tab doesn't bookmark
   // get recent bookmark to set folder
@@ -75,17 +81,22 @@ if (bookmarkFolderId.value) {
     // if there is a bookmark created recently
     const recentBookmark = recentBookmarkArr[0];
     setBookmarkFolderId(recentBookmark.parentId);
-    nodeTreeId.value = await getTreeId(recentBookmark.parentId);
+    setBookmarkOriginFolderId(recentBookmark.parentId)
+    // nodeTreeId.value = await getTreeId(recentBookmark.parentId);
   } else {
     // if there isn't any bookmarks created recently
     // (when this is a brand new browser)
-    // set the node tree based on the root node
-    nodeTreeId.value = '0';
-    // and set the selected folder as the first children node
+    // set the selected folder as the first children node
     // 根目录下的第一个子文件夹一般就是「书签栏」
     setBookmarkFolderId('1');
+    setBookmarkOriginFolderId('1')
+    // and the node tree will be start at the root node
   }
 }
+
+watch(bookmarkOriginFolderId, async () => {
+  nodeTreeId.value = await getTreeId(bookmarkOriginFolderId.value);
+})
 
 // watch the nodeTreeId change and get the node tree object
 watch(nodeTreeId, async () => {
@@ -153,11 +164,18 @@ const showFolderSearch = ref(false)
           <sup class="px-2 py-0.5 flex justify-center absolute -top-2 -right-4 text-xs text-white bg-red-400 rounded-full scale-[0.8] rotate-45 select-none">new</sup>
         </div>
       </div>
-      <button class="p-1.5 rounded transition-colors duration-300"
-      :class="showFolderSearch ? 'text-white bg-orange-400 hover:bg-orange-300' : 'text-orange-400 hover:text-orange-500 hover:bg-orange-100'"
-      @click="showFolderSearch = !showFolderSearch">
-        <Iconify icon="ph:magnifying-glass" class="w-4 h-4"></Iconify>
-      </button>
+      <div class="flex justify-center items-center gap-1">
+        <button class="p-1.5 rounded transition-colors duration-300"
+        :class="showFolderSearch ? 'text-white bg-orange-400 hover:bg-orange-300' : 'text-orange-400 hover:text-orange-500 hover:bg-orange-100'"
+        @click="showFolderSearch = !showFolderSearch">
+          <Iconify icon="ph:magnifying-glass" class="w-4 h-4"></Iconify>
+        </button>
+        <button v-show="bookmarkFolderId !== bookmarkOriginFolderId"
+          class="p-1.5 text-orange-200 hover:text-orange-500 active:text-white hover:bg-orange-100 active:bg-orange-500 rounded-full transition-colors duration-300"
+          @click="resetBookmarkFolder">
+          <Iconify icon="ph:arrow-counter-clockwise" class="w-4 h-4"></Iconify>
+        </button>
+      </div>
     </div>
     <div class="w-full">
       <FolderGrid v-if="nodeTree" v-show="!showFolderSearch" :folder-path="folderPath" :nodes="nodeTree.children"></FolderGrid>

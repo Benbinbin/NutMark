@@ -10,7 +10,7 @@ let tabTitle = '';
 let tabUrl = '';
 
 // the bookmark info (if the tab has bookmarked)
-let bookmarkState = false;
+// let bookmarkState = false;
 let bookmarkId = null;
 let bookmarkTitle = '';
 let bookmarkUrl = '';
@@ -30,7 +30,7 @@ const setBookmarkParameters = async () => {
 
   if (resultForBookmark) {
     // if the tab has already bookmarked
-    bookmarkState = true;
+    // bookmarkState = true;
 
     bookmarkId = resultForBookmark.id;
     bookmarkTitle = resultForBookmark.title;
@@ -46,7 +46,9 @@ const setBookmarkParameters = async () => {
       if(urlHostname) {
         const nodesArr = await chrome.bookmarks.search(urlHostname)
         similarBookmarks = nodesArr.filter(node => {
-          return node.url && (node.url !== targetUrl)
+          // only get the bookmark node (with url)
+          // and not the current bookmark (if the tab has bookmarked already)
+          return node.url && node.id !== bookmarkId;
         })
         similarBookmarks.sort((a, b) => {
           if(a.url.length < b.url.length) {
@@ -69,7 +71,7 @@ await setBookmarkParameters()
 createApp(App, {
   tabTitle,
   tabUrl,
-  bookmarkState,
+  // bookmarkState,
   bookmarkId,
   bookmarkTitle,
   bookmarkUrl,

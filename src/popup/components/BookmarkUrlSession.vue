@@ -1,47 +1,47 @@
 <script setup>
-import { ref, onMounted, watch, inject, nextTick } from 'vue'
-import { Icon as Iconify } from '@iconify/vue'
+import { ref, onMounted, watch, inject, nextTick } from 'vue';
+import { Icon as Iconify } from '@iconify/vue';
 
-const props = defineProps(['tabUrl', 'bookmarkUrl'])
-const emit = defineEmits(['update:bookmarkUrl'])
+const props = defineProps(['tabUrl', 'bookmarkUrl']);
+const emit = defineEmits(['update:bookmarkUrl']);
 
-const urlObj = ref(null)
+const urlObj = ref(null);
 
 /**
  * setting textarea height
  */
-const bookmarkUrlDOM = ref(null)
+const bookmarkUrlDOM = ref(null);
 const changeHeightHandler = (dom) => {
-  dom.style.height = 'auto'
-  dom.style.height = `${dom.scrollHeight}px`
+  dom.style.height = 'auto';
+  dom.style.height = `${dom.scrollHeight}px`;
 }
 
 onMounted(() => {
   nextTick(() => {
     if(bookmarkUrlDOM.value) {
-      changeHeightHandler(bookmarkUrlDOM.value)
+      changeHeightHandler(bookmarkUrlDOM.value);
     }
   })
 
   watch(showURLBtn, () => {
     if (!showURLBtn.value && bookmarkUrlDOM.value) {
       nextTick(() => {
-        changeHeightHandler(bookmarkUrlDOM.value)
+        changeHeightHandler(bookmarkUrlDOM.value);
       })
     }
   })
 })
 
 const urlInputHandler = (event) => {
-  emit('update:bookmarkUrl', event.target.value)
-  changeHeightHandler(event.target)
+  emit('update:bookmarkUrl', event.target.value);
+  changeHeightHandler(event.target);
 }
 
 /**
  * check url validation
  */
-const urlValidation = inject('urlValidation')
-const setUrlValidation = inject('setUrlValidation')
+const urlValidation = inject('urlValidation');
+const setUrlValidation = inject('setUrlValidation');
 
 const validateURL = (url) => {
   try {
@@ -121,8 +121,10 @@ const setBookmarkURL = (target) => {
 /**
  * reset bookmark url
  */
+const bookmarkOriginUrl = inject('bookmarkOriginUrl');
+
 const resetBookmarkURL = () => {
-  emit('update:bookmarkUrl', props.tabUrl);
+  emit('update:bookmarkUrl', bookmarkOriginUrl.value);
   const result = validateURL(props.bookmarkUrl);
   if (result) {
     urlObj.value = result;
