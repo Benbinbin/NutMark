@@ -2,6 +2,7 @@
 import { ref, computed, nextTick, inject, onMounted, watch } from 'vue'
 import { Icon as Iconify } from '@iconify/vue'
 import { useGetFaviconURL } from '@/composables/getFaviconURL'
+import { useGetTranslation } from '@/composables/getTranslation';
 
 const props = defineProps(['rootId', 'rootName', 'rootTree'])
 // const emits = defineEmits(['set-tree'])
@@ -224,14 +225,14 @@ const showBookmark = inject('showBookmark')
     <!-- collapse the folder -->
     <div v-show="!expand" :title="props.rootName"
       class="flex justify-start items-start">
-      <button class="shrink-0 pl-1 pr-0.5 py-1 transition-colors duration-300"
+      <button :title="useGetTranslation('popup_main_bookmark_folder_section_open_folder_btn_title')" class="shrink-0 pl-1 pr-0.5 py-1 transition-colors duration-300"
       :class="(selectFolderType === 'old' && bookmarkFolderId === props.rootId) ? 'text-white bg-green-500 hover:bg-green-600 rounded-l' : 'text-orange-300 hover:text-orange-400 hover:bg-orange-50 rounded'"
       @click.exact="expand = true" @click.ctrl.exact="setNodeTreeId(props.rootId)">
         <Iconify :icon="props.rootTree.length > 0 ? 'ph:folder-fill' : 'ph:folder'" class="w-5 h-5" />
       </button>
-      <button class="pl-0.5 pr-1 py-1 text-sm break-words transition-colors duration-300"
+      <button :title="useGetTranslation('popup_main_bookmark_folder_section_select_folder_btn_title')" class="pl-0.5 pr-1 py-1 text-sm break-words transition-colors duration-300"
       :class="(selectFolderType === 'old' && bookmarkFolderId === props.rootId) ? 'text-white bg-green-500 rounded-r' : 'text-gray-500 hover:text-green-600 hover:bg-green-100 rounded'"
-      @click="setBookmarkFolderId(props.rootId)">{{ props.rootName }}</button>
+      @click="setBookmarkFolderId(props.rootId)">{{ props.rootName || useGetTranslation('bookmark_folder_default_name') }}</button>
     </div>
     <!-- expand the folder -->
     <div v-show="expand" class="w-full h-full flex flex-col">
@@ -244,12 +245,12 @@ const showBookmark = inject('showBookmark')
           :class="(selectFolderType === 'old' && bookmarkFolderId===folderNavArr[0].id) ? 'text-green-400 from-green-50 border-green-300' : 'text-orange-400 from-orange-50 border-orange-300'"
           >
           <div class="flex justify-center items-center">
-            <button class="shrink-0 pl-1 pr-0.5 py-1 hover:text-red-500 hover:bg-red-200 rounded transition-colors duration-300" @click="expand = false">
+            <button :title="useGetTranslation('popup_main_bookmark_folder_section_close_folder_btn_title')" class="shrink-0 pl-1 pr-0.5 py-1 hover:text-red-500 hover:bg-red-200 rounded transition-colors duration-300" @click="expand = false">
               <Iconify :icon="currentTree.length ? 'ph:folder-open-fill' : 'ph:folder-open'" class="w-4 h-4" />
             </button>
-            <button class="pl-0.5 pr-1 py-1 hover:text-green-500 hover:bg-green-100 rounded transition-colors duration-300" @click="setBookmarkFolderId(folderNavArr[0].id)">{{ folderNavArr[0].title || '未命名文件夹' }}</button>
+            <button :title="useGetTranslation('popup_main_bookmark_folder_section_select_folder_btn_title')" class="pl-0.5 pr-1 py-1 hover:text-green-500 hover:bg-green-100 rounded transition-colors duration-300" @click="setBookmarkFolderId(folderNavArr[0].id)">{{ folderNavArr[0].title || useGetTranslation('bookmark_folder_default_name') }}</button>
           </div>
-          <button class="shrink-0 p-1 rounded transition-colors duration-300" :class="(selectFolderType === 'old' && bookmarkFolderId === folderNavArr[0].id) ? 'text-green-500 hover:text-green-600 hover:bg-green-200' : 'text-orange-500 hover:text-orange-600 hover:bg-orange-200'" @click="setNodeTreeId(folderNavArr[0].id)"
+          <button :title="useGetTranslation('popup_main_bookmark_folder_section_expand_folder_btn_title')" class="shrink-0 p-1 rounded transition-colors duration-300" :class="(selectFolderType === 'old' && bookmarkFolderId === folderNavArr[0].id) ? 'text-green-500 hover:text-green-600 hover:bg-green-200' : 'text-orange-500 hover:text-orange-600 hover:bg-orange-200'" @click="setNodeTreeId(folderNavArr[0].id)"
           >
             <Iconify icon="ph:arrow-square-out" class="w-4 h-4" />
           </button>
@@ -260,25 +261,26 @@ const showBookmark = inject('showBookmark')
           @scroll.passive="folderNavScrollingHandler">
           <button v-for="(folder, index) in folderNavArr.slice(1)"
             :key="folder.id"
+            :title="useGetTranslation('popup_main_bookmark_folder_section_folder_nav_btn_title')"
             class="shrink-0 p-2 relative text-xs font-bold border-t border-r rounded-tr transition-colors duration-300"
             :class="(selectFolderType === 'old' && bookmarkFolderId === folder.id) ? 'hover:text-green-500 hover:bg-green-100 border-green-300 text-green-400' : 'hover:text-orange-500 hover:bg-orange-100 border-orange-300 text-orange-400'"
             :style="`transform: translateX(-${(index * 2)}px)`" @click="setFolderNavPath(folder.path)">
-            {{ folder.title || '未命名文件夹' }}
+            {{ folder.title || useGetTranslation('bookmark_folder_default_name') }}
           </button>
         </div>
         <!-- scroll control buttons -->
         <div class="shrink-0 pl-2 flex items-center gap-0.5">
-          <button v-show="showScrollBtn" :disabled="scrollPos === 'start'"
+          <button v-show="showScrollBtn" :title="useGetTranslation('popup_main_bookmark_folder_section_folder_nav_left_scroll_btn_title')" :disabled="scrollPos === 'start'"
             class="p-1 hidden sm:flex items-center text-gray-500 active:text-white bg-gray-100 hover:bg-gray-200 active:bg-gray-500 rounded-full transition-colors duration-300"
             :class="scrollPos === 'start' ? 'opacity-30' : ''" @click="scrollFolderNavHandler('left')">
             <Iconify icon="ic:round-keyboard-arrow-left" class="w-4 h-4" />
           </button>
-          <button v-show="showScrollBtn" :disabled="scrollPos === 'end'"
+          <button v-show="showScrollBtn" :title="useGetTranslation('popup_main_bookmark_folder_section_folder_nav_right_scroll_btn_title')" :disabled="scrollPos === 'end'"
             class="p-1 hidden sm:flex items-center text-gray-500 active:text-white bg-gray-100 hover:bg-gray-200 active:bg-gray-500 rounded-full transition-colors duration-300"
             :class="scrollPos === 'end' ? 'opacity-30' : ''" @click="scrollFolderNavHandler('right')">
             <Iconify icon="ic:round-keyboard-arrow-right" class="w-4 h-4" />
           </button>
-          <button title="add new sub folder"
+          <button :title="useGetTranslation('popup_main_bookmark_folder_section_add_new_folder_btn_title')"
             :disabled="newFolder && newFolder.parentId === folderNavArr[0].id"
             class="p-1 flex items-center rounded-full transition-colors duration-300"
             :class="(selectFolderType === 'old' && bookmarkFolderId === folderNavArr[0].id) ? 'text-green-500 hover:text-green-600 active:text-white bg-green-100 hover:bg-green-200 active:bg-green-500' : 'text-orange-400 hover:text-orange-500 active:text-white bg-orange-100 hover:bg-orange-200 active:bg-orange-500'"
@@ -297,13 +299,13 @@ const showBookmark = inject('showBookmark')
           <div v-if="selectFolderType === 'new' && newFolder && newFolder.parentId === folderNavArr[0].id" class="p-1.5 flex justify-center items-center gap-1 text-white bg-purple-500 hover:bg-purple-600 rounded transition-colors duration-300">
             <Iconify icon="ph:folder-dashed" class="shrink-0 w-4 h-4" ></Iconify>
             <div v-show="newFolderTitleEdit" class="flex justify-center items-center gap-2">
-              <input ref="inputDOM" type="text" placeholder="请输入目录名称" v-model="newFolderTitle" class="px-1.5 text-xs text-purple-500 placeholder:text-purple-300 focus:text-purple-600 outline outline-1 outline-purple-400 focus:outline-purple-500 rounded-md" @keyup.enter="setNewFolderHandler" @blur="setNewFolderHandler">
+              <input ref="inputDOM" type="text" :placeholder="useGetTranslation('popup_main_bookmark_folder_section_new_folder_name_input_placeholder')" v-model="newFolderTitle" class="px-1.5 text-xs text-purple-500 placeholder:text-purple-300 focus:text-purple-600 outline outline-1 outline-purple-400 focus:outline-purple-500 rounded-md" @keyup.enter="setNewFolderHandler" @blur="setNewFolderHandler">
               <button class="shrink-0 p-1 text-green-800 hover:text-white bg-green-200 hover:bg-green-400 rounded transition-colors duration-300" @click="setNewFolderHandler">
                 <Iconify icon="ph:check-bold" class="w-2 h-2"></Iconify>
               </button>
             </div>
             <div v-show="!newFolderTitleEdit" class="flex justify-center items-center gap-2">
-              <span class="text-xs text-white" @dblclick="newFolderTitleEdit=true">{{ newFolder.title || '未命名文件夹' }}</span>
+              <span class="text-xs text-white" @dblclick="newFolderTitleEdit=true">{{ newFolder.title || useGetTranslation('bookmark_folder_default_name') }}</span>
               <button class="shrink-0 p-0.5 text-purple-600 hover:text-white bg-purple-50 hover:bg-purple-400 rounded transition-colors duration-300" @click="newFolderTitleEdit=true">
                 <Iconify icon="ph:cursor-text" class="w-3 h-3"></Iconify>
               </button>
@@ -315,20 +317,20 @@ const showBookmark = inject('showBookmark')
             <div v-if="!item.children" v-show="showBookmark" :key="item.id" class="p-1.5 flex justify-center items-center gap-1 text-blue-400 select-none">
               <img v-if="item.url" :src="useGetFaviconURL(item.url)" alt="bookmark icon" class="shrink-0 w-4 h-4">
               <Iconify v-else icon="ph:planet-fill" class="shrink-0 w-4 h-4"></Iconify>
-              <span class="line-camp-1 text-xs">{{ item.title || '未命名书签' }}</span>
+              <span class="line-camp-1 text-xs">{{ item.title || useGetTranslation('bookmark_default_name') }}</span>
             </div>
             <!-- sub-folder item -->
             <div v-if="item.children" :key="item.id"
               class="flex justify-center items-start">
-              <button class="pl-1.5 pr-0.5 py-1.5  transition-colors duration-300"
+              <button :title="useGetTranslation('popup_main_bookmark_folder_section_open_folder_btn_title')" class="pl-1.5 pr-0.5 py-1.5 transition-colors duration-300"
               :class="(selectFolderType === 'old' && bookmarkFolderId === item.id) ? 'text-white bg-green-500 hover:bg-green-600 rounded-l' : 'text-orange-300 hover:text-orange-400 hover:bg-orange-50 rounded'"
               @click="addFolderNav(item.id, item.title, index)">
                 <Iconify :icon="item.children.length > 0 ? 'ph:folder-fill' : 'ph:folder'" class="shrink-0 w-4 h-4" />
               </button>
-              <button class="pl-0.5 pr-1.5 py-1.5 text-xs break-words transition-colors duration-300"
+              <button :title="useGetTranslation('popup_main_bookmark_folder_section_select_folder_btn_title')" class="pl-0.5 pr-1.5 py-1.5 text-xs break-words transition-colors duration-300"
               :class="(selectFolderType === 'old' && bookmarkFolderId === item.id) ? 'text-white bg-green-500 rounded-r' : 'text-gray-500 hover:text-green-600 hover:bg-green-100 rounded'"
               @click="setBookmarkFolderId(item.id)">
-                {{ item.title || '未命名文件夹' }}
+                {{ item.title || useGetTranslation('bookmark_folder_default_name') }}
               </button>
             </div>
           </template>

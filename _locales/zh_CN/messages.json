@@ -1,6 +1,6 @@
 {
   "popup_header_show_similar_bookmarks_btn_title": {
-    "message": "点击按钮以显示相似的书签列表"
+    "message": "点击按钮显示相似书签列表"
   },
   "popup_header_bookmark_state_saved": {
     "message": "已保存"
@@ -12,7 +12,7 @@
     "message": "删除"
   },
   "popup_header_delete_bookmarks_btn_title": {
-    "message": "点击按钮以删除书签"
+    "message": "点击按钮删除书签"
   },
   "popup_header_update_bookmarks_btn_content": {
     "message": "更新"
@@ -21,19 +21,19 @@
     "message": "保存"
   },
   "popup_header_update_bookmarks_btn_title": {
-    "message": "点击按钮以更新书签"
+    "message": "点击按钮更新书签"
   },
   "popup_header_create_bookmarks_btn_content": {
     "message": "保存"
   },
   "popup_header_create_bookmarks_btn_title": {
-    "message": "点击按钮以创建书签"
+    "message": "点击按钮创建书签"
   },
   "popup_main_bookmark_title_section_name": {
     "message": "名称"
   },
   "popup_main_bookmark_title_section_reset_btn_title": {
-    "message": "点击按钮以重置书签名称"
+    "message": "点击按钮重置书签名称"
   },
   "popup_main_bookmark_title_section_textarea_placeholder": {
     "message": "请输入书签名称"
@@ -42,13 +42,13 @@
     "message": "删除书签"
   },
   "popup_modal_delete_bookmark_prompt_confirm_btn_title": {
-    "message": "点击按钮以确认"
+    "message": "点击按钮确认"
   },
   "popup_modal_delete_bookmark_prompt_confirm_btn_content": {
     "message": "确认"
   },
   "popup_modal_delete_bookmark_prompt_cancel_btn_title": {
-    "message": "点击按钮以取消"
+    "message": "点击按钮取消"
   },
   "popup_modal_delete_bookmark_prompt_cancel_btn_content": {
     "message": "取消"
@@ -57,61 +57,124 @@
     "message": "相似书签列表"
   },
   "popup_modal_similar_bookmarks_list_btn_title": {
-    "message": "点击按钮以编辑书签信息"
+    "message": "点击按钮编辑书签信息"
+  },
+  "popup_main_bookmark_url_section_name": {
+    "message": "网址"
+  },
+  "popup_main_bookmark_url_section_format_warning": {
+    "message": "请输入正确格式的链接"
+  },
+  "popup_main_bookmark_url_section_edit_bookmark_with_duplicated_url_btn_title": {
+    "message": "点击按钮编辑已保存的相同网址的书签"
+  },
+  "popup_main_bookmark_url_section_edit_bookmark_with_duplicated_url_btn_content": {
+    "message": "已保存相同网址的书签"
+  },
+  "popup_main_bookmark_url_section_one_click_mode_btn_title": {
+    "message": "点击按钮启用一键编辑网址模式"
+  },
+  "popup_main_bookmark_url_section_reset_url_btn_title": {
+    "message": "点击按钮重置网址"
+  },
+  "popup_main_bookmark_url_section_textarea_placeholder": {
+    "message": "请输入书签的链接"
+  },
+  "popup_main_bookmark_url_section_show_url_hostname_btn_title": {
+    "message": "悬停在按钮上以突出显示链接的主机名"
+  },
+  "popup_main_bookmark_url_section_delete_url_path_btn_title": {
+    "message": "点击按钮删除链接路径到结尾的部分"
+  },
+  "popup_main_bookmark_url_section_delete_url_search_btn_title": {
+    "message": "点击按钮删除链接搜索到结尾的部分"
+  },
+  "popup_main_bookmark_url_section_delete_url_hash_btn_title": {
+    "message": "点击按钮删除链接哈希部分"
   },
   "popup_main_bookmark_folder_section_name": {
     "message": "文件夹"
   },
   "popup_main_bookmark_folder_section_set_node_tree_id_btn_old_title": {
-    "message": "点击按钮以显示文件夹所在位置"
+    "message": "点击按钮显示文件夹所在位置"
   },
   "popup_main_bookmark_folder_section_set_node_tree_id_btn_prompt_content": {
     "message": "请选择文件夹 👇"
   },
   "popup_main_bookmark_folder_section_set_node_tree_id_btn_new_title": {
-    "message": "点击按钮以显示新文件夹所在位置"
+    "message": "点击按钮显示新文件夹所在位置"
   },
   "popup_main_bookmark_folder_section_toggle_search_folder_btn_title": {
-    "message": "点击按钮以显示或隐藏搜索文件夹面板"
+    "message": "点击按钮切换显示或隐藏搜索文件夹面板"
   },
   "popup_main_bookmark_folder_section_reset_folder_btn_title": {
-    "message": "点击按钮以重置书签所在文件夹"
+    "message": "点击按钮重置书签的文件夹"
   },
-  "popup_main_bookmark_url_section_name": {
-    "message": "链接"
+  "popup_main_bookmark_folder_section_toggle_bookmark_btn_title": {
+    "message": "显示书签或只显示文件夹"
   },
-  "popup_main_bookmark_url_section_format_warning": {
-    "message": "请输入格式正确的链接"
+  "popup_main_bookmark_folder_section_folder_path_nav_btn_title": {
+    "message": "点击按钮显示文件夹所在位置"
   },
-  "popup_main_bookmark_url_section_edit_bookmark_with_duplicated_url_btn_title": {
-    "message": "点击按钮以编辑已保存的具有相同链接的书签"
+  "popup_main_bookmark_folder_section_folder_path_nav_root_btn_content": {
+    "message": "根目录"
   },
-  "popup_main_bookmark_url_section_edit_bookmark_with_duplicated_url_btn_content": {
-    "message": "已保存的具有相同链接的书签"
+  "popup_main_bookmark_folder_section_add_new_folder_btn_title": {
+    "message": "点击按钮添加新的文件夹"
   },
-  "popup_main_bookmark_url_section_one_click_mode_btn_title": {
-    "message": "点击按钮以启用一键模式编辑链接"
+  "popup_main_bookmark_folder_section_new_folder_name_input_placeholder": {
+    "message": "请输入目录名称"
   },
-  "popup_main_bookmark_url_section_reset_url_btn_title": {
-    "message": "点击按钮以重置链接"
+  "popup_main_bookmark_folder_section_confirm_new_folder_name_btn_title": {
+    "message": "点击按钮确认新文件夹名称"
   },
-  "popup_main_bookmark_url_section_textarea_placeholder": {
-    "message": "请输入书签链接"
+  "popup_main_bookmark_folder_section_edit_new_folder_name_btn_title": {
+    "message": "点击按钮编辑新文件夹名称"
   },
-  "popup_main_bookmark_url_section_show_url_hostname_btn_title": {
-    "message": "悬停按钮以突出显示链接的主机名"
+  "popup_main_bookmark_folder_section_open_folder_btn_title": {
+    "message": "点击按钮在原地打开文件夹"
   },
-  "popup_main_bookmark_url_section_delete_url_path_btn_title": {
-    "message": "点击按钮以删除链接路径到结尾的部分"
+  "popup_main_bookmark_folder_section_expand_folder_btn_title": {
+    "message": "点击按钮展开文件夹"
   },
-  "popup_main_bookmark_url_section_delete_url_search_btn_title": {
-    "message": "点击按钮以删除链接搜索到结尾的部分"
+  "popup_main_bookmark_folder_section_close_folder_btn_title": {
+    "message": "点击按钮关闭文件夹"
   },
-  "popup_main_bookmark_url_section_delete_url_hash_btn_title": {
-    "message": "点击按钮以删除链接哈希部分"
+  "popup_main_bookmark_folder_section_select_folder_btn_title": {
+    "message": "点击选择此文件夹"
+  },
+  "popup_main_bookmark_folder_section_folder_nav_btn_title": {
+    "message": "单击以显示此文件夹"
+  },
+  "popup_main_bookmark_folder_section_folder_nav_left_scroll_btn_title": {
+    "message": "点击按钮向左滚动"
+  },
+  "popup_main_bookmark_folder_section_folder_nav_right_scroll_btn_title": {
+    "message": "点击按钮向右滚动"
+  },
+  "popup_main_bookmark_folder_section_search_folder_include_bookmark_btn_title": {
+    "message": "点击按钮切换搜索条目包括书签或注释"
+  },
+  "popup_main_bookmark_folder_section_search_folder_input_placeholder": {
+    "message": "请输入要搜索的内容"
+  },
+  "popup_main_bookmark_folder_section_search_folder_focus_to_input_box_btn_title": {
+    "message": "单击聚焦输入框"
+  },
+  "popup_main_bookmark_folder_section_search_folder_state_waiting": {
+    "message": "输入搜索"
+  },
+  "popup_main_bookmark_folder_section_search_folder_state_search": {
+    "message": "搜索中"
+  },
+  "popup_main_bookmark_folder_section_search_folder_state_solved": {
+    "message": "抱歉！未搜索到条目"
   },
   "bookmark_folder_default_name": {
     "message": "未命名文件夹"
+  },
+  "bookmark_default_name": {
+    "message": "未命名书签"
   },
   "bookmark_favicon_img_alt": {
     "message": "书签图标"

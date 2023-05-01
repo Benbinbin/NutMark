@@ -59,24 +59,6 @@
   "popup_modal_similar_bookmarks_list_btn_title": {
     "message": "click the button to edit the bookmark information"
   },
-  "popup_main_bookmark_folder_section_name": {
-    "message": "Folder"
-  },
-  "popup_main_bookmark_folder_section_set_node_tree_id_btn_old_title": {
-    "message": "click the button to show where the folder is located"
-  },
-  "popup_main_bookmark_folder_section_set_node_tree_id_btn_prompt_content": {
-    "message": "please select the folder 👇"
-  },
-  "popup_main_bookmark_folder_section_set_node_tree_id_btn_new_title": {
-    "message": "click the button to show where the new folder is located"
-  },
-  "popup_main_bookmark_folder_section_toggle_search_folder_btn_title": {
-    "message": "click the button to toggle showing or hiding the search folder panel"
-  },
-  "popup_main_bookmark_folder_section_reset_folder_btn_title": {
-    "message": "click the button to reset the folder of bookmark"
-  },
   "popup_main_bookmark_url_section_name": {
     "message": "URL"
   },
@@ -110,8 +92,89 @@
   "popup_main_bookmark_url_section_delete_url_hash_btn_title": {
     "message": "click the button to delete the part of the URL hash"
   },
+  "popup_main_bookmark_folder_section_name": {
+    "message": "Folder"
+  },
+  "popup_main_bookmark_folder_section_set_node_tree_id_btn_old_title": {
+    "message": "click the button to show where the folder is located"
+  },
+  "popup_main_bookmark_folder_section_set_node_tree_id_btn_prompt_content": {
+    "message": "please select the folder 👇"
+  },
+  "popup_main_bookmark_folder_section_set_node_tree_id_btn_new_title": {
+    "message": "click the button to show where the new folder is located"
+  },
+  "popup_main_bookmark_folder_section_toggle_search_folder_btn_title": {
+    "message": "click the button to toggle showing or hiding the search folder panel"
+  },
+  "popup_main_bookmark_folder_section_reset_folder_btn_title": {
+    "message": "click the button to reset the folder of bookmark"
+  },
+  "popup_main_bookmark_folder_section_toggle_bookmark_btn_title": {
+    "message": "show bookmark or just show folder"
+  },
+  "popup_main_bookmark_folder_section_folder_path_nav_btn_title": {
+    "message": "click the button to show where the folder is located"
+  },
+  "popup_main_bookmark_folder_section_folder_path_nav_root_btn_content": {
+    "message": "Root Folder"
+  },
+  "popup_main_bookmark_folder_section_add_new_folder_btn_title": {
+    "message": "click the button to add new folder"
+  },
+  "popup_main_bookmark_folder_section_new_folder_name_input_placeholder": {
+    "message": "Please Enter a Directory Name"
+  },
+  "popup_main_bookmark_folder_section_confirm_new_folder_name_btn_title": {
+    "message": "click the button to confirm the new folder name"
+  },
+  "popup_main_bookmark_folder_section_edit_new_folder_name_btn_title": {
+    "message": "click the button to edit the new folder name"
+  },
+  "popup_main_bookmark_folder_section_open_folder_btn_title": {
+    "message": "click the button to open the folder in place"
+  },
+  "popup_main_bookmark_folder_section_expand_folder_btn_title": {
+    "message": "click the button to expand the folder"
+  },
+  "popup_main_bookmark_folder_section_close_folder_btn_title": {
+    "message": "click the button to close the folder"
+  },
+  "popup_main_bookmark_folder_section_select_folder_btn_title": {
+    "message": "click to select this folder"
+  },
+  "popup_main_bookmark_folder_section_folder_nav_btn_title": {
+    "message": "click to show this folder"
+  },
+  "popup_main_bookmark_folder_section_folder_nav_left_scroll_btn_title": {
+    "message": "click the button to scroll to the left"
+  },
+  "popup_main_bookmark_folder_section_folder_nav_right_scroll_btn_title": {
+    "message": "click the button to scroll to the right"
+  },
+  "popup_main_bookmark_folder_section_search_folder_include_bookmark_btn_title": {
+    "message": "click the button to toggle search entry include bookmarks or note"
+  },
+  "popup_main_bookmark_folder_section_search_folder_input_placeholder": {
+    "message": "Please Enter Content to Search"
+  },
+  "popup_main_bookmark_folder_section_search_folder_focus_to_input_box_btn_title": {
+    "message": "click to focus the input box"
+  },
+  "popup_main_bookmark_folder_section_search_folder_state_waiting": {
+    "message": "Type to Search"
+  },
+  "popup_main_bookmark_folder_section_search_folder_state_search": {
+    "message": "Searching"
+  },
+  "popup_main_bookmark_folder_section_search_folder_state_solved": {
+    "message": "Oops! Empty Entry"
+  },
   "bookmark_folder_default_name": {
     "message": "Unnamed Folder"
+  },
+  "bookmark_default_name": {
+    "message": "Unnamed Bookmark"
   },
   "bookmark_favicon_img_alt": {
     "message": "bookmark icon"

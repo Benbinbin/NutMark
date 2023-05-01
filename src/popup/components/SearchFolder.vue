@@ -2,6 +2,7 @@
 import { ref, watch, inject, nextTick, TransitionGroup } from 'vue';
 import { Icon as Iconify } from '@iconify/vue'
 import { useGetFaviconURL } from '@/composables/getFaviconURL'
+import { useGetTranslation } from '@/composables/getTranslation';
 
 const props = defineProps(['showState'])
 const emit = defineEmits(['hide'])
@@ -132,25 +133,25 @@ const setFolderHandler = (node) => {
   <div class="rounded-md shadow shadow-orange-100">
     <!-- header -->
     <div class="px-2 py-1.5 flex items-center gap-2 bg-orange-50/50 focus-within:bg-orange-50 border-b border-orange-200 focus-within:border-orange-300 rounded-t-md shadow shadow-orange-50 transition-colors duration-300">
-      <button title="search entry include bookmarks or not" @click="includeBookmark = !includeBookmark" class="shrink-0 p-1 rounded transition-colors duration-300" :class="includeBookmark ? 'hover:bg-orange-100' : 'hover:bg-orange-200'">
+      <button :title="useGetTranslation('popup_main_bookmark_folder_section_search_folder_include_bookmark_btn_title')" @click="includeBookmark = !includeBookmark" class="shrink-0 p-1 rounded transition-colors duration-300" :class="includeBookmark ? 'hover:bg-orange-100' : 'hover:bg-orange-200'">
         <img src="@/assets/nut-mark.svg" alt="nut mark icon" class="w-4 h-4" :class="includeBookmark ? 'opacity-100' : 'opacity-30'">
       </button>
-      <input ref="inputDOM" type="text" name="search bookmark node" id="search-bookmark-node" placeholder="请输入搜索内容" class="grow py-0.5 text-sm text-orange-600 placeholder:text-orange-200 focus:outline-none bg-transparent" v-model="queryStr" @input="inputHandler">
+      <input ref="inputDOM" type="text" name="search bookmark node" id="search-bookmark-node" :placeholder="useGetTranslation('popup_main_bookmark_folder_section_search_folder_input_placeholder')" class="grow py-0.5 text-sm text-orange-600 placeholder:text-orange-200 focus:outline-none bg-transparent" v-model="queryStr" @input="inputHandler">
     </div>
     <!-- result -->
     <div class="result-content-container w-full max-h-[450px] overflow-y-auto">
-      <button v-show="searchState === 'waiting'" class="w-full px-4 py-8 flex flex-col justify-center items-center gap-2 text-orange-300 hover:text-orange-400 transition-colors duration-300"
+      <button v-show="searchState === 'waiting'" :title="useGetTranslation('popup_main_bookmark_folder_section_search_folder_focus_to_input_box_btn_title')" class="w-full px-4 py-8 flex flex-col justify-center items-center gap-2 text-orange-300 hover:text-orange-400 transition-colors duration-300"
       @click="focusInputHandler">
         <Iconify icon="fluent:text-t-28-filled" class="w-10 h-10"></Iconify>
-        <span class="text-sm">Type to Search</span>
+        <span class="text-sm">{{ useGetTranslation('popup_main_bookmark_folder_section_search_folder_state_waiting') }}</span>
       </button>
       <div v-show="searchState === 'searching'" class="px-4 py-8 flex flex-col justify-center items-center gap-2 text-orange-400">
         <Iconify icon="fluent:slide-search-28-filled" class="w-10 h-10 animate-bounce"></Iconify>
-        <span class="text-sm">Searching</span>
+        <span class="text-sm">{{ useGetTranslation('popup_main_bookmark_folder_section_search_folder_state_search') }}</span>
       </div>
       <div v-show="searchState === 'solved' && nodesArr.length === 0" class="px-4 py-8 flex flex-col justify-center items-center gap-2 text-red-400">
         <Iconify icon="fluent:mail-inbox-dismiss-28-filled" class="w-10 h-10"></Iconify>
-        <span class="text-sm">Oops! Empty Entry</span>
+        <span class="text-sm">{{ useGetTranslation('popup_main_bookmark_folder_section_search_folder_state_solved') }}</span>
       </div>
       <ul v-show="searchState === 'solved' && nodesWithFolderPath.length>0" class="w-full p-4 space-y-2">
         <TransitionGroup
@@ -163,7 +164,7 @@ const setFolderHandler = (node) => {
           >
           <template v-for="nodeObj in nodesWithFolderPath" :key="nodeObj.id">
             <li v-show="includeBookmark || !nodeObj.node.url">
-              <button class="group w-full p-2  rounded transition-colors duration-300" :class="nodeObj.folderId === bookmarkFolderId ? 'bg-orange-50' : 'hover:bg-orange-50'"
+              <button :title="useGetTranslation('popup_main_bookmark_folder_section_select_folder_btn_title')" class="group w-full p-2 rounded transition-colors duration-300" :class="nodeObj.folderId === bookmarkFolderId ? 'bg-orange-50' : 'hover:bg-orange-50'"
               @click="setFolderHandler(nodeObj)">
                 <div class="flex justify-start items-center gap-1 text-sm">
                   <Iconify icon="ph:folder-fill" class="shrink-0 w-5 h-5 text-orange-300 group-hover:text-orange-400 transition-colors duration-300" ></Iconify>
