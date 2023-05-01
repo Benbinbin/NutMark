@@ -1,86 +1,119 @@
 {
   "popup_header_show_similar_bookmarks_btn_title": {
-    "message": "click the button to show the similar bookmarks list",
-    "description": "the advisory information related to the button of showing similar bookmarks"
+    "message": "click the button to show the similar bookmarks list"
   },
   "popup_header_bookmark_state_saved": {
-    "message": "Saved",
-    "description": "the bookmark state is saved"
+    "message": "Saved"
   },
   "popup_header_bookmark_state_unsaved": {
-    "message": "Unsaved",
-    "description": "the bookmark state is unsaved"
+    "message": "Unsaved"
   },
   "popup_header_delete_bookmarks_btn_content": {
-    "message": "Delete",
-    "description": "the content of the delete bookmark button"
+    "message": "Delete"
   },
   "popup_header_delete_bookmarks_btn_title": {
-    "message": "click the button to delete bookmark",
-    "description": "the advisory information related to the button of delete bookmark"
+    "message": "click the button to delete bookmark"
   },
   "popup_header_update_bookmarks_btn_content": {
-    "message": "Update",
-    "description": "the content of the update bookmark button"
+    "message": "Update"
   },
   "popup_header_update_bookmarks_btn_content_hover": {
-    "message": "Save",
-    "description": "the content of the update bookmark button when hover"
+    "message": "Save"
   },
   "popup_header_update_bookmarks_btn_title": {
-    "message": "click the button to update bookmark",
-    "description": "the advisory information related to the button of update bookmark"
+    "message": "click the button to update bookmark"
   },
   "popup_header_create_bookmarks_btn_content": {
-    "message": "Save",
-    "description": "the content of the create bookmark button"
+    "message": "Save"
   },
   "popup_header_create_bookmarks_btn_title": {
-    "message": "click the button to create a bookmark",
-    "description": "the advisory information related to the button of create bookmark"
+    "message": "click the button to create a bookmark"
   },
   "popup_main_bookmark_title_section_name": {
-    "message": "Name",
-    "description": "the title of the bookmark name section"
+    "message": "Name"
   },
   "popup_main_bookmark_title_section_reset_btn_title": {
-    "message": "click the button to reset bookmark name",
-    "description": "the advisory information related to the button of reset bookmark name"
+    "message": "click the button to reset bookmark name"
   },
   "popup_main_bookmark_title_section_textarea_placeholder": {
-    "message": "Please enter a name for the bookmark",
-    "description": "the placeholder for the textarea element in bookmark name section"
+    "message": "Please enter a name for the bookmark"
   },
   "popup_modal_delete_bookmark_prompt_title": {
-    "message": "Delete the Bookmark",
-    "description": "the title of the delete bookmark prompt modal"
+    "message": "Delete the Bookmark"
   },
   "popup_modal_delete_bookmark_prompt_confirm_btn_title": {
-    "message": "click the button to confirm",
-    "description": "the title of the confirm button"
+    "message": "click the button to confirm"
   },
   "popup_modal_delete_bookmark_prompt_confirm_btn_content": {
-    "message": "Confirm",
-    "description": "the content of the confirm button"
+    "message": "Confirm"
   },
   "popup_modal_delete_bookmark_prompt_cancel_btn_title": {
-    "message": "click the button to cancel",
-    "description": "the title of the cancel button"
+    "message": "click the button to cancel"
   },
   "popup_modal_delete_bookmark_prompt_cancel_btn_content": {
-    "message": "Cancel",
-    "description": "the content of the cancel button"
+    "message": "Cancel"
   },
   "popup_modal_similar_bookmarks_list_title": {
-    "message": "Similar Bookmarks List",
-    "description": "the title of the similar bookmarks list modal"
+    "message": "Similar Bookmarks List"
   },
   "popup_modal_similar_bookmarks_list_btn_title": {
-    "message": "click the button to edit the bookmark information",
-    "description": "the advisory information related to the button of similar bookmark list entry"
+    "message": "click the button to edit the bookmark information"
+  },
+  "popup_main_bookmark_folder_section_name": {
+    "message": "Folder"
+  },
+  "popup_main_bookmark_folder_section_set_node_tree_id_btn_old_title": {
+    "message": "click the button to show where the folder is located"
+  },
+  "popup_main_bookmark_folder_section_set_node_tree_id_btn_prompt_content": {
+    "message": "please select the folder 👇"
+  },
+  "popup_main_bookmark_folder_section_set_node_tree_id_btn_new_title": {
+    "message": "click the button to show where the new folder is located"
+  },
+  "popup_main_bookmark_folder_section_toggle_search_folder_btn_title": {
+    "message": "click the button to toggle showing or hiding the search folder panel"
+  },
+  "popup_main_bookmark_folder_section_reset_folder_btn_title": {
+    "message": "click the button to reset the folder of bookmark"
+  },
+  "popup_main_bookmark_url_section_name": {
+    "message": "URL"
+  },
+  "popup_main_bookmark_url_section_format_warning": {
+    "message": "Please Enter a Link in the Correct Format"
+  },
+  "popup_main_bookmark_url_section_edit_bookmark_with_duplicated_url_btn_title": {
+    "message": "click the button to edit the saved bookmark with the same url"
+  },
+  "popup_main_bookmark_url_section_edit_bookmark_with_duplicated_url_btn_content": {
+    "message": "A Saved bookmark with the same URL"
+  },
+  "popup_main_bookmark_url_section_one_click_mode_btn_title": {
+    "message": "click the button to enable the one click mode to edit URL"
+  },
+  "popup_main_bookmark_url_section_reset_url_btn_title": {
+    "message": "click the button to reset the URL"
+  },
+  "popup_main_bookmark_url_section_textarea_placeholder": {
+    "message": "Please Enter the Link of the Bookmark"
+  },
+  "popup_main_bookmark_url_section_show_url_hostname_btn_title": {
+    "message": "hover the button to highlight the hostname of the URL"
+  },
+  "popup_main_bookmark_url_section_delete_url_path_btn_title": {
+    "message": "click the button to delete the part of the URL from path to the end"
+  },
+  "popup_main_bookmark_url_section_delete_url_search_btn_title": {
+    "message": "click the button to delete the part of the URL from search to the end"
+  },
+  "popup_main_bookmark_url_section_delete_url_hash_btn_title": {
+    "message": "click the button to delete the part of the URL hash"
+  },
+  "bookmark_folder_default_name": {
+    "message": "Unnamed Folder"
   },
   "bookmark_favicon_img_alt": {
-    "message": "bookmark icon",
-    "description": "the text description of the bookmark icon"
+    "message": "bookmark icon"
   }
 }

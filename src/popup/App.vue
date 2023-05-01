@@ -2,7 +2,7 @@
 import { onMounted, ref, provide, nextTick } from 'vue';
 import { Icon as Iconify } from '@iconify/vue';
 import { useGetFaviconURL } from '@/composables/getFaviconURL';
-import { useGetTranslation } from '../composables/getTranslation';
+import { useGetTranslation } from '@/composables/getTranslation';
 import BookmarkUrlSession from './components/BookmarkUrlSession.vue';
 import BookmarkFolderSession from './components/BookmarkFolderSession.vue';
 

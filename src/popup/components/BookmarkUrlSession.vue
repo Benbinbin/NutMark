@@ -2,6 +2,7 @@
 import { ref, onMounted, watch, inject, nextTick } from 'vue';
 import { Icon as Iconify } from '@iconify/vue';
 import { useCheckBookmarkState } from '@/composables/checkBookmarkState';
+import { useGetTranslation } from '@/composables/getTranslation';
 
 const props = defineProps(['bookmarkId', 'bookmarkUrl']);
 const emit = defineEmits(['update:bookmarkUrl']);
@@ -162,7 +163,7 @@ const resetBookmarkURL = () => {
       <div class="flex justify-start items-end gap-2">
         <p class="section-title text-sky-500">
           <Iconify icon="ph:link-fill" class="section-title-icon"></Iconify>
-          <span class="text-base font-semibold">链接</span>
+          <span class="text-base font-semibold">{{ useGetTranslation('popup_main_bookmark_url_section_name') }}</span>
         </p>
         <div v-if="!urlValidation"
           class="w-fit px-2 py-1 flex justify-center items-center gap-1 bg-red-100 scale-90 origin-left rounded-full">
@@ -170,22 +171,22 @@ const resetBookmarkURL = () => {
             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
             <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
           </span>
-          <span class="text-xs text-red-500">请输入格式正确的链接</span>
+          <span class="text-xs text-red-500">{{ useGetTranslation('popup_main_bookmark_url_section_format_warning') }}</span>
         </div>
-        <button v-if="urlBookmarkNode && urlBookmarkNode.id !== props.bookmarkId" class="w-fit pl-2 pr-2.5 py-1 flex justify-center items-center gap-1 text-amber-600 hover:text-amber-700 bg-amber-100 hover:bg-amber-200 scale-90 origin-left rounded-full transition-colors duration-300"
+        <button v-if="urlBookmarkNode && urlBookmarkNode.id !== props.bookmarkId" :title="useGetTranslation('popup_main_bookmark_url_section_edit_bookmark_with_duplicated_url_btn_title')" class="w-fit pl-2 pr-2.5 py-1 flex justify-center items-center gap-1 text-amber-600 hover:text-amber-700 bg-amber-100 hover:bg-amber-200 scale-90 origin-left rounded-full transition-colors duration-300"
         @click="setBookmarkInfoHandler">
           <img src="@/assets/nut-mark.svg" alt="nut mark icon" class="w-4 h-4">
-          <span class="text-xs">存在书签与该 URL 相匹配</span>
+          <span class="text-xs">{{ useGetTranslation('popup_main_bookmark_url_section_edit_bookmark_with_duplicated_url_btn_content')}}</span>
         </button>
       </div>
       <div class="flex justify-center items-center gap-1">
-        <button v-show="urlValidation"
+        <button v-show="urlValidation" :title="useGetTranslation('popup_main_bookmark_url_section_one_click_mode_btn_title')"
           class="p-1.5 flex justify-center items-center gap-1 rounded-full transition-colors duration-300"
           :class="showURLBtn ? 'text-white bg-sky-500 hover:bg-sky-400' : 'text-sky-200 hover:text-sky-500 active:text-white hover:bg-sky-100 active:bg-sky-500'"
           @click="setShowURLBtnHandler">
           <Iconify icon="ph:cursor-click" class="w-4 h-4"></Iconify>
         </button>
-        <button v-show="bookmarkOriginUrl !== props.bookmarkUrl"
+        <button v-show="bookmarkOriginUrl !== props.bookmarkUrl" :title="useGetTranslation('popup_main_bookmark_url_section_reset_url_btn_title')"
           class="p-1.5 text-sky-200 hover:text-sky-500 active:text-white hover:bg-sky-100 active:bg-sky-500 rounded-full transition-colors duration-300"
           @click="resetBookmarkURL">
           <Iconify icon="ph:arrow-counter-clockwise" class="w-4 h-4"></Iconify>
@@ -195,7 +196,7 @@ const resetBookmarkURL = () => {
     <div class="space-y-2">
       <div v-show="!showURLBtn || !urlValidation || !props.bookmarkUrl" class="textarea-container shadow"
         :class="urlValidation ? 'border-sky-300 focus-within:border-sky-400 shadow-sky-50' : 'border-red-300 focus-within:border-red-400 shadow-red-50'">
-        <textarea ref="bookmarkUrlDOM" name="bookmark url" id="bookmark-url-textarea" placeholder="请输入书签的链接地址"
+        <textarea ref="bookmarkUrlDOM" name="bookmark url" id="bookmark-url-textarea" :placeholder="useGetTranslation('popup_main_bookmark_url_section_textarea_placeholder')"
           :class="urlValidation ? 'text-sky-600 placeholder:text-sky-200' : 'text-red-600'" :value="bookmarkUrl"
           @input="urlInputHandler"></textarea>
       </div>
@@ -203,27 +204,27 @@ const resetBookmarkURL = () => {
       <div v-if="showURLBtn && urlValidation && urlObj" class="rounded-md shadow shadow-sky-200">
         <div
           class="url-btn-container p-2 flex justify-center items-center gap-3 text-xs bg-sky-50/50 border-b border-sky-200 rounded-t-md shadow shadow-sky-100">
-          <button class="text-sky-600 hover:text-white bg-sky-200/60 hover:bg-sky-500" @mouseover="hoverTarget = 'host'"
+          <button :title="useGetTranslation('popup_main_bookmark_url_section_show_url_hostname_btn_title')" class="text-sky-600 hover:text-white bg-sky-200/60 hover:bg-sky-500" @mouseover="hoverTarget = 'host'"
             @mouseout="hoverTarget = ''">
             <Iconify icon="ph:house" class="w-4 h-4"></Iconify>
             <span>Host</span>
           </button>
 
-          <button v-if="urlObj.pathname" class="group text-red-500 hover:text-white bg-red-100 hover:bg-red-500"
+          <button v-if="urlObj.pathname" :title="useGetTranslation('popup_main_bookmark_url_section_delete_url_path_btn_title')" class="group text-red-500 hover:text-white bg-red-100 hover:bg-red-500"
             @mouseover="hoverTarget = 'path'" @mouseout="hoverTarget = ''" @click="setBookmarkURL('path')">
             <Iconify icon="ph:broom" class="hidden group-hover:inline-block w-4 h-4"></Iconify>
             <Iconify icon="ph:path" class="group-hover:hidden w-4 h-4"></Iconify>
             <span>Path</span>
           </button>
 
-          <button v-if="urlObj.search" class="group text-red-500 hover:text-white bg-red-100 hover:bg-red-500"
+          <button v-if="urlObj.search" :title="useGetTranslation('popup_main_bookmark_url_section_delete_url_search_btn_title')" class="group text-red-500 hover:text-white bg-red-100 hover:bg-red-500"
             @mouseover="hoverTarget = 'search'" @mouseout="hoverTarget = ''" @click="setBookmarkURL('search')">
             <Iconify icon="ph:broom" class="hidden group-hover:inline-block w-4 h-4"></Iconify>
             <Iconify icon="ph:magnifying-glass" class="group-hover:hidden w-4 h-4"></Iconify>
             <span>Search</span>
           </button>
 
-          <button v-if="urlObj.hash" class="group text-red-500 hover:text-white bg-red-100 hover:bg-red-500"
+          <button v-if="urlObj.hash" :title="useGetTranslation('popup_main_bookmark_url_section_delete_url_hash_btn_title')" class="group text-red-500 hover:text-white bg-red-100 hover:bg-red-500"
             @mouseover="hoverTarget = 'hash'" @mouseout="hoverTarget = ''" @click="setBookmarkURL('hash')">
             <Iconify icon="ph:broom" class="hidden group-hover:inline-block w-4 h-4"></Iconify>
             <Iconify icon="ph:hash" class="group-hover:hidden w-4 h-4"></Iconify>
