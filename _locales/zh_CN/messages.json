@@ -29,6 +29,9 @@
   "popup_header_create_bookmarks_btn_title": {
     "message": "点击按钮创建书签"
   },
+  "popup_header_info_btn_title": {
+    "message": "点击按钮以了解更多 Nut Mark"
+  },
   "popup_main_bookmark_title_section_name": {
     "message": "名称"
   },
@@ -57,7 +60,7 @@
     "message": "取消"
   },
   "popup_modal_similar_bookmarks_list_title": {
-    "message": "相似书签列表"
+    "message": "相似书签"
   },
   "popup_modal_similar_bookmarks_list_btn_title": {
     "message": "点击按钮编辑书签信息"

@@ -29,6 +29,9 @@
   "popup_header_create_bookmarks_btn_title": {
     "message": "click the button to create a bookmark"
   },
+  "popup_header_info_btn_title": {
+    "message": "click the button to learn more about Nut Mark"
+  },
   "popup_main_bookmark_title_section_name": {
     "message": "Name"
   },
@@ -57,7 +60,7 @@
     "message": "Cancel"
   },
   "popup_modal_similar_bookmarks_list_title": {
-    "message": "Similar Bookmarks List"
+    "message": "Similar Bookmarks"
   },
   "popup_modal_similar_bookmarks_list_btn_title": {
     "message": "click the button to edit the bookmark information"

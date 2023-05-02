@@ -37,9 +37,6 @@ if(bookmarkId.value) {
   bookmarkOriginTitle.value = props.tabTitle;
 }
 
-console.log(bookmarkOriginTitle.value);
-console.log(props.tabTitle);
-
 // change textarea input box height
 const bookmarkTitleDOM = ref(null);
 
@@ -229,20 +226,37 @@ const deleteBookmark = async () => {
   // close the popup page when finish
   window.close()
 }
+
+/**
+ * open introduction page
+ */
+const openIntroductionPageHandler = () => {
+  chrome.tabs.create({
+    url: 'src/introduction/index.html'
+  })
+}
 </script>
 
 <template>
   <div>
-    <header class="px-2 py-2 flex justify-between sticky top-0 inset-x-0 bg-gray-50 border-b shadow">
-      <button :disabled="similarBookmarks.length===0" :title="useGetTranslation('popup_header_show_similar_bookmarks_btn_title')" class="px-3 py-1 flex justify-center items-center gap-1 border rounded-full transition-colors duration-300"
-      :class="bookmarkId ? 'bg-amber-100/60 hover:bg-amber-200 border-amber-200 text-amber-500 hover:text-amber-600' : 'bg-emerald-100/60 hover:bg-emerald-200 text-emerald-500 border-emerald-200 hover:text-emerald-600'"
-      @click="showSimilarBookmarksModal=true">
-        <img v-if="bookmarkUrl" :src="useGetFaviconURL(bookmarkUrl)" :alt="useGetTranslation('bookmark_favicon_img_alt')" class="w-4 h-4">
-        <Iconify v-else icon="ph:planet-fill" class="w-4 h-4 text-purple-500"></Iconify>
-        <span class="text-xs font-bold">{{ bookmarkId ? useGetTranslation('popup_header_bookmark_state_saved') : useGetTranslation('popup_header_bookmark_state_unsaved') }}</span>
-        <Iconify v-if="similarBookmarks.length > 0" icon="fluent:more-circle-32-filled" class="w-4 h-4"></Iconify>
-      </button>
-      <div class="flex justify-center items-center gap-2">
+    <header class="px-2 py-2 grid grid-cols-3 gap-2 sticky top-0 inset-x-0 bg-gray-50 border-b shadow">
+      <div class="flex justify-start items-center">
+        <button :title="useGetTranslation('popup_header_info_btn_title')" class="p-1 text-gray-500 hover:text-white bg-gray-100 hover:bg-gray-400 rounded-full transition-colors duration-300"
+        @click="openIntroductionPageHandler">
+          <Iconify icon="ph:info-fill" class="w-5 h-5"></Iconify>
+        </button>
+      </div>
+      <div class="flex justify-center items-center">
+        <button :disabled="similarBookmarks.length===0" :title="useGetTranslation('popup_header_show_similar_bookmarks_btn_title')" class="px-3 py-1 flex justify-center items-center gap-1 border rounded-full transition-colors duration-300"
+        :class="bookmarkId ? 'bg-amber-100/60 hover:bg-amber-200 border-amber-200 text-amber-500 hover:text-amber-600' : 'bg-emerald-100/60 hover:bg-emerald-200 text-emerald-500 border-emerald-200 hover:text-emerald-600'"
+        @click="showSimilarBookmarksModal=true">
+          <img v-if="bookmarkUrl" :src="useGetFaviconURL(bookmarkUrl)" :alt="useGetTranslation('bookmark_favicon_img_alt')" class="w-4 h-4">
+          <Iconify v-else icon="ph:planet-fill" class="w-4 h-4 text-purple-500"></Iconify>
+          <span class="text-xs font-bold">{{ bookmarkId ? useGetTranslation('popup_header_bookmark_state_saved') : useGetTranslation('popup_header_bookmark_state_unsaved') }}</span>
+          <Iconify v-if="similarBookmarks.length > 0" icon="fluent:more-circle-32-filled" class="w-4 h-4"></Iconify>
+        </button>
+      </div>
+      <div class="flex justify-end items-center gap-2">
         <button v-if="bookmarkId" :title="useGetTranslation('popup_header_delete_bookmarks_btn_title')" class="px-2 py-1.5 flex justify-center items-center gap-1 text-white bg-red-500 hover:bg-red-600 rounded transition-colors duration-300" @click="showDeleteBookmarkPrompt=true">
           <Iconify icon="ic:round-delete" class="w-4 h-4"></Iconify>
           <span class="text-xs font-bold">{{ useGetTranslation('popup_header_delete_bookmarks_btn_content') }}</span>

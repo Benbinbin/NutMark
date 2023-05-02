@@ -20,5 +20,12 @@ export default defineConfig({
     hmr: {
       port: 3000
     }
+  },
+  build: {
+    rollupOptions: {
+      input: {
+        introduction: 'src/introduction/index.html'
+      }
+    }
   }
 })
