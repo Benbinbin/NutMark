@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch, inject, nextTick } from 'vue';
+import { ref, onMounted, watch, inject, nextTick, computed } from 'vue';
 import { Icon as Iconify } from '@iconify/vue';
 import { useCheckBookmarkState } from '@/composables/checkBookmarkState';
 import { useGetTranslation } from '@/composables/getTranslation';
@@ -8,6 +8,16 @@ const props = defineProps(['bookmarkId', 'bookmarkUrl']);
 const emit = defineEmits(['update:bookmarkUrl']);
 
 const urlObj = ref(null);
+
+const hostnameFromUrlObj = computed(() => {
+  if(!urlObj.value) return ""
+  const protocol = `${urlObj.value.protocol}//`;
+  const userInfo = (urlObj.value.username && urlObj.value.password) ? `${urlObj.value.username}:${urlObj.value.password}@` : '';
+  const hostname = urlObj.value.hostname;
+  const port = urlObj.value.port ? `:${urlObj.value.port}` : '';
+
+  return protocol + userInfo + hostname + port;
+})
 
 /**
  * setting textarea height
@@ -210,7 +220,7 @@ const resetBookmarkURL = () => {
             <span>Host</span>
           </button>
 
-          <button v-if="urlObj.pathname" :title="useGetTranslation('popup_main_bookmark_url_section_delete_url_path_btn_title')" class="group text-red-500 hover:text-white bg-red-100 hover:bg-red-500"
+          <button v-if="urlObj.pathname && props.bookmarkUrl !== hostnameFromUrlObj" :title="useGetTranslation('popup_main_bookmark_url_section_delete_url_path_btn_title')" class="group text-red-500 hover:text-white bg-red-100 hover:bg-red-500"
             @mouseover="hoverTarget = 'path'" @mouseout="hoverTarget = ''" @click="setBookmarkURL('path')">
             <Iconify icon="ph:broom" class="hidden group-hover:inline-block w-4 h-4"></Iconify>
             <Iconify icon="ph:path" class="group-hover:hidden w-4 h-4"></Iconify>
@@ -242,7 +252,7 @@ const resetBookmarkURL = () => {
             </span>
 
             <!-- Path -->
-            <span v-if="urlObj.pathname" class="url-snippet" :class="hoverTarget === 'path' ? 'text-red-600 line-through bg-red-100 border-red-300' : 'text-sky-600 border-sky-300'">{{ urlObj.pathname }}</span>
+            <span v-if="urlObj.pathname && props.bookmarkUrl !== hostnameFromUrlObj" class="url-snippet" :class="hoverTarget === 'path' ? 'text-red-600 line-through bg-red-100 border-red-300' : 'text-sky-600 border-sky-300'">{{ urlObj.pathname }}</span>
 
             <!-- Search -->
             <span v-if="urlObj.search" class="url-snippet" :class="(hoverTarget === 'path' || hoverTarget === 'search') ? 'text-red-600 line-through bg-red-100 border-red-300' : 'text-sky-600 border-sky-300'">{{ urlObj.search }}</span>
