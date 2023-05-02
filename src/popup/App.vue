@@ -13,6 +13,7 @@ const props = defineProps([
   'bookmarkTitle',
   'bookmarkUrl',
   'bookmarkFolderId',
+  'nodeTreeId',
   'similarBookmarks'
 ]);
 
@@ -87,12 +88,12 @@ provide('setUrlValidation', setUrlValidation);
 const selectFolderType = ref('old');
 
 // old folder id
-const bookmarkOriginFolderId = ref(null)
+const bookmarkOriginFolderId = ref(props.bookmarkFolderId)
 const setBookmarkOriginFolderId = (id) => {
   bookmarkOriginFolderId.value = id;
 }
 
-const bookmarkFolderId = ref(null);
+const bookmarkFolderId = ref(props.bookmarkFolderId);
 const setBookmarkFolderId = (id) => {
   selectFolderType.value = 'old'
   bookmarkFolderId.value = id;
@@ -107,10 +108,10 @@ const setNewFolder = (newFolderObj) => {
 }
 
 // init the bookmarkFolderId if the tab has already bookmarked
-if (bookmarkId.value) {
-  setBookmarkOriginFolderId(props.bookmarkFolderId)
-  setBookmarkFolderId(props.bookmarkFolderId);
-}
+// if (bookmarkId.value) {
+//   setBookmarkOriginFolderId(props.bookmarkFolderId)
+//   setBookmarkFolderId(props.bookmarkFolderId);
+// }
 
 provide('bookmarkOriginFolderId', bookmarkOriginFolderId)
 provide('setBookmarkOriginFolderId', setBookmarkOriginFolderId)
@@ -287,7 +288,7 @@ const deleteBookmark = async () => {
       </Suspense>
       <!-- bookmark folder section -->
       <Suspense>
-        <BookmarkFolderSession></BookmarkFolderSession>
+        <BookmarkFolderSession :node-tree-id="props.nodeTreeId"></BookmarkFolderSession>
       </Suspense>
     </main>
 

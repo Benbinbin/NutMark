@@ -5,7 +5,7 @@ import { useGetFaviconURL } from '@/composables/getFaviconURL';
 import { useGetTranslation } from '@/composables/getTranslation';
 import FolderGridItem from './FolderGridItem.vue';
 
-const props = defineProps(['folder-path', 'nodes']);
+const props = defineProps(['folderPath', 'nodes']);
 
 const showBookmark = ref(true)
 provide('showBookmark', showBookmark)

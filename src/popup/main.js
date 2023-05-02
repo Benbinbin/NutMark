@@ -3,6 +3,7 @@ import { createApp } from 'vue';
 import '@/style.css';
 import { useGetTabInfo } from '@/composables/getTabInfo';
 import { useCheckBookmarkState } from '@/composables/checkBookmarkState';
+import { useGetTreeId } from '@/composables/getTreeId'
 import App from './App.vue';
 
 // the tab info
@@ -14,7 +15,12 @@ let tabUrl = '';
 let bookmarkId = null;
 let bookmarkTitle = '';
 let bookmarkUrl = '';
-let bookmarkFolderId = null;
+// init value is "1"
+// this id stand for the "Bookmarks bar"/「书签栏」 directory
+let bookmarkFolderId = '1';
+// init value is "0"
+// this id stand for the root folder
+let nodeTreeId = '0';
 
 // the similar bookmarks
 let similarBookmarks = [];
@@ -30,13 +36,31 @@ const setBookmarkParameters = async () => {
 
   if (resultForBookmark) {
     // if the tab has already bookmarked
-    // bookmarkState = true;
-
     bookmarkId = resultForBookmark.id;
     bookmarkTitle = resultForBookmark.title;
     bookmarkUrl = resultForBookmark.url;
     bookmarkFolderId = resultForBookmark.parentId;
+  } else {
+    // if the tab doesn't bookmark
+    // get recent bookmark to set folder
+    const recentBookmarkArr = await chrome.bookmarks.getRecent(1);
+
+    if (recentBookmarkArr.length > 0) {
+      // if there is a bookmark created recently
+      const recentBookmark = recentBookmarkArr[0];
+      bookmarkFolderId = recentBookmark.parentId;
+    } else {
+      // if there isn't any bookmarks created recently
+      // (when this is a brand new browser)
+      // set the selected folder as the first children node
+      // 根目录下的第一个子文件夹一般就是「书签栏」
+      bookmarkFolderId = '1';
+      // and the node tree will be start at the root node
+    }
   }
+
+  nodeTreeId = await useGetTreeId(bookmarkFolderId)
+
   // get the similar bookmarks
   const targetUrl = bookmarkUrl || tabUrl;
   if(targetUrl) {
@@ -70,11 +94,11 @@ setBookmarkParameters().then(() => {
   createApp(App, {
     tabTitle,
     tabUrl,
-    // bookmarkState,
     bookmarkId,
     bookmarkTitle,
     bookmarkUrl,
     bookmarkFolderId,
+    nodeTreeId,
     similarBookmarks
   }).mount('#app');
 })
