@@ -126,8 +126,8 @@ const showFolderSearch = ref(false)
         </div>
       </div>
       <div class="flex justify-center items-center gap-1">
-        <button :title="useGetTranslation('popup_main_bookmark_folder_section_toggle_search_folder_btn_title')" class="p-1.5 rounded transition-colors duration-300"
-        :class="showFolderSearch ? 'text-white bg-orange-400 hover:bg-orange-300' : 'text-orange-400 hover:text-orange-500 hover:bg-orange-100'"
+        <button :title="useGetTranslation('popup_main_bookmark_folder_section_toggle_search_folder_btn_title')" class="p-1.5 rounded-full transition-colors duration-300"
+        :class="showFolderSearch ? 'text-white bg-orange-400 hover:bg-orange-300' : 'text-orange-200 hover:text-orange-500 hover:bg-orange-100'"
         @click="showFolderSearch = !showFolderSearch">
           <Iconify icon="ph:magnifying-glass" class="w-4 h-4"></Iconify>
         </button>

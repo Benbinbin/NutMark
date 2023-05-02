@@ -32,6 +32,9 @@
   "popup_main_bookmark_title_section_name": {
     "message": "Name"
   },
+  "popup_main_bookmark_title_section_set_tab_name_btn_title": {
+    "message": "click the button to set the tab name as bookmark name"
+  },
   "popup_main_bookmark_title_section_reset_btn_title": {
     "message": "click the button to reset bookmark name"
   },

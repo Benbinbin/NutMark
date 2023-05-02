@@ -32,6 +32,9 @@
   "popup_main_bookmark_title_section_name": {
     "message": "名称"
   },
+  "popup_main_bookmark_title_section_set_tab_name_btn_title": {
+    "message": "点击按钮将选项卡名称设置为书签名称"
+  },
   "popup_main_bookmark_title_section_reset_btn_title": {
     "message": "点击按钮重置书签名称"
   },

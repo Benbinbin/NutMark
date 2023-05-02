@@ -29,12 +29,16 @@ const bookmarkOriginTitle = ref('');
 const bookmarkTitle = ref('');
 
 // init value of bookmark title
-bookmarkOriginTitle.value = props.tabTitle;
 if(bookmarkId.value) {
   bookmarkTitle.value = props.bookmarkTitle;
+  bookmarkOriginTitle.value = props.bookmarkTitle;
 } else {
   bookmarkTitle.value = props.tabTitle;
+  bookmarkOriginTitle.value = props.tabTitle;
 }
+
+console.log(bookmarkOriginTitle.value);
+console.log(props.tabTitle);
 
 // change textarea input box height
 const bookmarkTitleDOM = ref(null);
@@ -54,9 +58,9 @@ onMounted(async () => {
 })
 
 // reset the bookmark title based on tab
-const resetBookmarkTitle = () => {
-  bookmarkTitle.value = bookmarkOriginTitle.value;
-}
+// const resetBookmarkTitle = () => {
+//   bookmarkTitle.value = bookmarkOriginTitle.value;
+// }
 
 /**
  * bookmark url
@@ -272,11 +276,18 @@ const deleteBookmark = async () => {
               <span class="text-base font-semibold">{{ useGetTranslation('popup_main_bookmark_title_section_name') }}</span>
             </p>
           </div>
-          <button v-show="bookmarkTitle !== bookmarkOriginTitle"
-          :title="useGetTranslation('popup_main_bookmark_title_section_reset_btn_title')"
-          class="p-1.5 text-gray-300 hover:text-gray-500 active:text-white hover:bg-gray-200 active:bg-gray-500 rounded-full transition-colors duration-300" @click="resetBookmarkTitle">
-            <Iconify icon="ph:arrow-counter-clockwise" class="w-4 h-4"></Iconify>
-          </button>
+          <div class="flex justify-center items-center gap-1">
+            <button v-if="bookmarkOriginTitle !== props.tabTitle" :title="useGetTranslation('popup_main_bookmark_title_section_set_tab_name_btn_title')"
+              class="p-1.5 text-gray-300 hover:text-gray-500 active:text-white hover:bg-gray-200 active:bg-gray-500 rounded-full transition-colors duration-300"
+              @click="bookmarkTitle = tabTitle">
+              <Iconify icon="ph:text-t" class="w-4 h-4"></Iconify>
+            </button>
+            <button v-show="bookmarkTitle !== bookmarkOriginTitle"
+            :title="useGetTranslation('popup_main_bookmark_title_section_reset_btn_title')"
+            class="p-1.5 text-gray-300 hover:text-gray-500 active:text-white hover:bg-gray-200 active:bg-gray-500 rounded-full transition-colors duration-300" @click="bookmarkTitle = bookmarkOriginTitle">
+              <Iconify icon="ph:arrow-counter-clockwise" class="w-4 h-4"></Iconify>
+            </button>
+          </div>
         </div>
         <div class="textarea-container border-gray-300 focus-within:border-gray-400 shadow-sm shadow-gray-100">
           <textarea ref="bookmarkTitleDOM" name="bookmark title" id="bookmark-title-textarea" class="text-gray-700 placeholder:text-gray-300" :placeholder="useGetTranslation('popup_main_bookmark_title_section_textarea_placeholder')" v-model="bookmarkTitle" @input="changeHeightHandler($event.target)"></textarea>
