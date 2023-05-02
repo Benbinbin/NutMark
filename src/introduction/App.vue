@@ -3,13 +3,13 @@ import { Icon as Iconify } from '@iconify/vue';
 </script>
 
 <template>
-  <div class="py-8">
-    <header class="heading-container-bg-color px-4 py-36 sm:py-52 lg:py-60 space-y-6">
+  <div>
+    <header class="heading-container-bg-color h-screen p-4 flex flex-col justify-center items-center gap-6">
       <h1 class="flex justify-center items-center gap-4">
-        <img src="@/assets/nut-mark.svg" alt="nut mark icon" class="w-12 sm:w-24 h-12 sm:h-24">
-        <span class="text-5xl sm:text-8xl text-center text-amber-500 font-bold">Nut Mark</span>
+        <img src="@/assets/nut-mark.svg" alt="nut mark icon" class="w-12 sm:w-24 2xl:w-32 h-12 sm:h-24 2xl:h-32">
+        <span class="text-5xl sm:text-8xl 2xl:text-9xl text-center text-amber-500 font-bold">Nut Mark</span>
       </h1>
-      <p class="text-xl sm:text-3xl text-center text-amber-500 font-light">Make Bookmarking a Breeze</p>
+      <p class="text-xl sm:text-2xl 2xl:text-3xl text-center text-amber-500 font-light">Make Bookmarking a Breeze</p>
     </header>
     <main class="container mx-auto px-8 sm:px-16 md:px-20 py-16 space-y-8 sm:space-y-16 text-gray-600">
       <section>
@@ -39,7 +39,7 @@ import { Icon as Iconify } from '@iconify/vue';
         <h2>How to use</h2>
         <div>
           <h3>Icon</h3>
-          <p>the icon for the Nut Mark extension on the right corner of the browser is a <span class="text-emerald-500 font-bold">Green</span> or <span class="text-amber-500 font-bold">Orange</span> <span class="font-bold">Nut</span>, which color has a special meaning about the bookmark state of the active tab:</p>
+          <p>The icon for the Nut Mark extension on the right corner of the browser is a <span class="text-emerald-500 font-bold">Green</span> or <span class="text-amber-500 font-bold">Orange</span> <span class="font-bold">Nut</span>, which color has a special meaning about the bookmark state of the active tab:</p>
           <p class="m-2 px-4 py-2 flex justify-start items-center gap-4 border border-emerald-300 rounded-md">
             <img src="@/assets/nut-unmark.svg" alt="a green nut image stand for unmark" class="w-5 h-5">
             <span>The <span class="text-emerald-500 font-bold">Green Nut</span> icon stands for the current active tab is still <span class="text-emerald-500 font-bold">unsaved</span> as a bookmark.</span>
@@ -51,7 +51,7 @@ import { Icon as Iconify } from '@iconify/vue';
           <div class="flex justify-center items-center">
             <div class="w-fit ">
               <div class="p-2">
-                <figure class="my-2">
+                <figure class="my-2 space-y-2">
                   <img src="@/assets/introduction/pin-extension.gif" alt="the gif image to show how to pin a extension to browser tool bar" class="lg:w-3/5 mx-auto py-2">
                   <figcaption class="flex justify-center items-center gap-1 text-sm text-center text-amber-500 italic">
                     <Iconify icon="bi:lightbulb-fill" class="w-3 h-3"></Iconify>
@@ -64,6 +64,15 @@ import { Icon as Iconify } from '@iconify/vue';
           </div>
         </div>
       </section>
+      <section>
+        <h3>Popup Page</h3>
+        <p>Click the Nut Mark icon and a small page will popup, then you can save or edit a bookmark more easily within this page.</p>
+        <figure class="my-2 space-y-2">
+          <img src="@/assets/introduction/screenshot.png" alt="the screenshot of Nut Mark popup page" class="lg:w-3/5 mx-auto border shadow">
+          <figcaption class="text-sm text-center text-amber-500 italic">Nut Mark popup page screenshot
+          </figcaption>
+        </figure>
+      </section>
     </main>
   </div>
 </template>
@@ -74,19 +83,15 @@ import { Icon as Iconify } from '@iconify/vue';
 }
 
 h2 {
-  @apply my-8 text-3xl text-center font-bold ;
+  @apply my-8 text-3xl sm:text-4xl text-center font-bold;
 }
 
 h3 {
-  @apply my-6 text-2xl text-center font-bold;
+  @apply my-6 text-2xl sm:text-3xl text-center font-bold;
 }
 
 section P {
-  @apply max-w-prose mx-auto;
-}
-
-p {
-  @apply text-lg;
+  @apply max-w-prose text-lg mx-auto;
 }
 
 .tip-box {
