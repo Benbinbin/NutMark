@@ -345,8 +345,8 @@ const openIntroductionPageHandler = () => {
                 class="group w-full px-3 py-2 flex flex-col items-start gap-1 text-gray-500 hover:bg-orange-100 rounded transition-colors duration-300"
                 @click="setBookmarkInfo(node)">
                   <div class="flex justify-center items-center gap-2">
-                    <!-- <img v-if="node.url" :src="useGetFaviconURL(node.url)" alt="bookmark favicon" class="shrink-0 w-4 h-4"> -->
-                    <Iconify icon="ph:planet-fill" class="shrink-0 w-4 h-4 text-purple-500"></Iconify>
+                    <img v-if="node.url" :src="useGetFaviconURL(node.url)" alt="bookmark favicon" class="shrink-0 w-4 h-4">
+                    <Iconify v-else icon="ph:planet-fill" class="shrink-0 w-4 h-4 text-purple-500"></Iconify>
                     <span class="line-camp-1 text-base text-start group-hover:text-orange-400 font-bold transition-colors duration-300">{{ node.title }}</span>
                   </div>
                   <span class="max-w-full pl-6 text-sm text-start text-blue-400 group-hover:text-orange-300 break-words transition-colors duration-300">{{ node.url }}</span>
