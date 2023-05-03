@@ -184,5 +184,8 @@
   },
   "bookmark_favicon_img_alt": {
     "message": "bookmark icon"
+  },
+  "bookmark_new_folder_default_title": {
+    "message": "New folder"
   }
 }

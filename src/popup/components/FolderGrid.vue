@@ -35,8 +35,8 @@ watch(newFolderTitleEdit, () => {
 const setNewFolder = inject('setNewFolder')
 // set the new folder
 const addNewFolder = () => {
-  // the default title is 「新建文件夹」
-  newFolderTitle.value = '新建文件夹'
+  // the default title is "New folder" or 「新建文件夹」
+  newFolderTitle.value = useGetTranslation('bookmark_new_folder_default_title')
   setNewFolder({
     index: 0,
     parentId: nodeTreeId.value,

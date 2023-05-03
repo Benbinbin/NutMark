@@ -184,5 +184,8 @@
   },
   "bookmark_favicon_img_alt": {
     "message": "书签图标"
+  },
+  "bookmark_new_folder_default_title": {
+    "message": "新建文件夹"
   }
 }
