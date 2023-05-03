@@ -5,7 +5,7 @@ import { useChangeActionIcon } from '@/composables/changeActionIcon'
 chrome.runtime.onInstalled.addListener(({reason}) => {
   if (reason === 'install') {
     chrome.tabs.create({
-      url: 'src/introduction/index.html'
+      url: 'https://nutmark.benbinbin.com'
     })
   }
 });

@@ -232,7 +232,7 @@ const deleteBookmark = async () => {
  */
 const openIntroductionPageHandler = () => {
   chrome.tabs.create({
-    url: 'src/introduction/index.html'
+    url: 'https://nutmark.benbinbin.com'
   })
 }
 </script>
