@@ -3,8 +3,8 @@
 # Nut Mark
 Nut Mark is a browser extension to help you collect bookmarks more easily.
 
-[![Install in Chrome](./public/install-in-chrome.svg)](#)
 [![Install in Edge](./public/install-in-edge.svg)](#)
+[![Install from source code](./public/install-in-github.svg)](https://github.com/Benbinbin/NutMark/releases)
 
 :bulb: check out the [Introduction Page](https://nutmark.benbinbin.com/) for more information.
 
