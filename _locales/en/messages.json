@@ -1,4 +1,7 @@
 {
+  "extension_description": {
+    "message": "Nut Mark make bookmarking a breeze"
+  },
   "popup_header_show_similar_bookmarks_btn_title": {
     "message": "click the button to show the similar bookmarks list"
   },

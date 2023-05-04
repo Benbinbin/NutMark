@@ -1,4 +1,7 @@
 {
+  "extension_description": {
+    "message": "Nut Mark 让收藏书签变得更轻松"
+  },
   "popup_header_show_similar_bookmarks_btn_title": {
     "message": "点击按钮显示相似书签列表"
   },

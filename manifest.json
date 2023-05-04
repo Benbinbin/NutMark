@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Nut Mark",
   "version": "1.0.0",
-  "description": "Nut Mark is a browser extension to help you collect bookmarks more easily.",
+  "description": "__MSG_extension_description__",
   "permissions": [
     "bookmarks",
     "tabs",
