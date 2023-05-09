@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, provide, nextTick } from 'vue';
+import { onMounted, ref, provide, nextTick, watch } from 'vue';
 import { Icon as Iconify } from '@iconify/vue';
 import { useGetFaviconURL } from '@/composables/getFaviconURL';
 import { useGetTranslation } from '@/composables/getTranslation';
@@ -127,6 +127,20 @@ provide('setNewFolder', setNewFolder)
  */
 const similarBookmarks = ref(props.similarBookmarks);
 const showSimilarBookmarksModal = ref(false);
+
+// stop body scroll when modal show up
+const similarBookmarksContainerDOM = ref(null);
+
+const scrollHandler = (event) => {
+  event.stopPropagation()
+  if (similarBookmarksContainerDOM.value) {
+    if (similarBookmarksContainerDOM.value.scrollTop === 0 && event.deltaY < 0) {
+      event.preventDefault();
+    } else if (Math.ceil(similarBookmarksContainerDOM.value.scrollTop + similarBookmarksContainerDOM.value.clientHeight) >= similarBookmarksContainerDOM.value.scrollHeight && event.deltaY > 0) {
+      event.preventDefault();
+    }
+  }
+}
 
 const setBookmarkInfo = (bookmarkNode) => {
   // set bookmark id
@@ -335,9 +349,9 @@ const openIntroductionPageHandler = () => {
     <Teleport to="body">
       <div v-if="showSimilarBookmarksModal" class="fixed inset-0 z-50 flex justify-center items-center" @wheel="$event.preventDefault()">
         <div class="absolute inset-0 -z-10 bg-black/50 backdrop-blur-sm" @click="showSimilarBookmarksModal = false"></div>
-        <div class="max-w-[600px] p-4 flex flex-col justify-center items-center gap-6 bg-white rounded-md">
-          <h2 class="pb-2 text-lg text-gray-600 font-bold border-b border-gray-600 select-none">{{ useGetTranslation('popup_modal_similar_bookmarks_list_title') }}</h2>
-          <div class="w-full max-h-[400px] overflow-y-auto flex justify-center items-center">
+        <div class="max-w-[600px] px-2 py-4 flex flex-col justify-center items-center gap-6 bg-white rounded-md">
+          <h2 class="pb-2 text-lg text-gray-600 font-bold border-b border-gray-600 select-none" >{{ useGetTranslation('popup_modal_similar_bookmarks_list_title') }}</h2>
+          <div ref="similarBookmarksContainerDOM" class="similar-bookmarks-container w-full max-h-[400px] overflow-y-auto px-2 flex justify-center items-center"  @wheel="scrollHandler">
             <ul class="w-full flex flex-col justify-center items-start gap-4">
               <li v-for="node in similarBookmarks" :key="node.id" class="w-full">
                 <button
@@ -398,5 +412,18 @@ section {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 1;
+}
+
+.similar-bookmarks-container {
+  &::-webkit-scrollbar {
+    width: 7px;
+  }
+  &::-webkit-scrollbar-thumb {
+    border-radius: 3.5px;
+    background-color: #d1d5db;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: #9ca3af;
+  }
 }
 </style>
