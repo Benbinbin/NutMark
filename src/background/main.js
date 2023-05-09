@@ -1,6 +1,10 @@
 import { useCheckBookmarkState } from '@/composables/checkBookmarkState'
 import { useChangeActionIcon } from '@/composables/changeActionIcon'
 
+
+/**
+ * show page after install extension
+ */
 // open the introduction page when the extension is installed
 chrome.runtime.onInstalled.addListener(({reason}) => {
   if (reason === 'install') {
@@ -10,10 +14,17 @@ chrome.runtime.onInstalled.addListener(({reason}) => {
   }
 });
 
-// watching the active tab change
-chrome.tabs.onActivated.addListener(async (activeInfo) => {
-  const activeTabID = activeInfo.tabId;
-  const tab = await chrome.tabs.get(activeTabID);
+/**
+ * change action icon
+ */
+const checkActiveWindowTabState = async () => {
+  // get the active tab of current focus window
+  const [tab] = await chrome.tabs.query({
+    active: true,
+    currentWindow: true,
+  });
+
+  if (!tab) return;
 
   const url = tab.url || tab.pendingUrl;
 
@@ -25,77 +36,31 @@ chrome.tabs.onActivated.addListener(async (activeInfo) => {
 
   // change action icon
   await useChangeActionIcon(bookmarkState);
+}
+
+// watching the active tab change
+chrome.tabs.onActivated.addListener(async (activeInfo) => {
+  await checkActiveWindowTabState();
 });
 
 // watching the window focus change
 chrome.windows.onFocusChanged.addListener(async (windowId) => {
-  const [tab] = await chrome.tabs.query({
-    active: true,
-    currentWindow: true,
-  });
-
-  if (!tab) return;
-
-  const url = tab.url || tab.pendingUrl;
-
-  let bookmarkState = false;
-  if (url) {
-    const result = await useCheckBookmarkState(url);
-    if(result) bookmarkState = true
-  }
-
-  // change action icon
-  await useChangeActionIcon(bookmarkState);
+  await checkActiveWindowTabState();
 });
 
-// watching tab update
+// watching tab (url) update
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (!changeInfo.url) return;
 
-  // when tab update url check the bookmark state
-  const { url } = changeInfo;
-
-  let bookmarkState = false
-  const result = await useCheckBookmarkState(url);
-  if(result) bookmarkState = true
-
-  // change action icon
-  await useChangeActionIcon(bookmarkState);
+  await checkActiveWindowTabState();
 });
 
 // watching bookmark create
 chrome.bookmarks.onCreated.addListener(async (id, bookmarkNode) => {
-  const [tab] = await chrome.tabs.query({
-    active: true,
-    currentWindow: true,
-  });
-
-  if (!tab) return;
-
-  const url = tab.url || tab.pendingUrl;
-
-  let bookmarkState = false
-  const result = await useCheckBookmarkState(url);
-  if(result) bookmarkState = true
-
-  // change action icon
-  await useChangeActionIcon(bookmarkState);
+  await checkActiveWindowTabState();
 });
 
 // watching bookmark delete
 chrome.bookmarks.onRemoved.addListener(async (id, bookmarkNode) => {
-  const [tab] = await chrome.tabs.query({
-    active: true,
-    currentWindow: true,
-  });
-
-  const url = tab.url || tab.pendingUrl;
-
-  let bookmarkState = false
-  const result = await useCheckBookmarkState(url);
-  if (result) bookmarkState = true
-
-
-  // change action icon
-  await useChangeActionIcon(bookmarkState);
+  await checkActiveWindowTabState();
 });
