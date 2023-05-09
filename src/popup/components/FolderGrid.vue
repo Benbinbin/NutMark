@@ -5,7 +5,7 @@ import { useGetFaviconURL } from '@/composables/getFaviconURL';
 import { useGetTranslation } from '@/composables/getTranslation';
 import FolderGridItem from './FolderGridItem.vue';
 
-const props = defineProps(['folderPath', 'nodes']);
+const props = defineProps(['nodeTreeFolder', 'folderPath', 'nodes', ]);
 
 const showBookmark = ref(true)
 provide('showBookmark', showBookmark)
@@ -15,6 +15,7 @@ const setNodeTreeId = inject('setNodeTreeId')
 
 const selectFolderType = inject('selectFolderType')
 const bookmarkFolderId = inject('bookmarkFolderId')
+const setBookmarkFolderId = inject('setBookmarkFolderId')
 
 // new folder
 const newFolder = inject('newFolder')
@@ -58,17 +59,26 @@ const setNewFolderHandler = () => {
   <div class="rounded-md shadow shadow-orange-100">
     <!-- grid header -->
     <div class="px-2 py-1.5 flex justify-between items-start gap-4 bg-orange-50/50 border-b border-orange-200 rounded-t-md shadow shadow-orange-50">
-      <div class="grow flex justify-start items-start">
+      <div class="grow flex justify-start items-start gap-1">
         <button :title="useGetTranslation('popup_main_bookmark_folder_section_toggle_bookmark_btn_title')" @click="showBookmark = !showBookmark" class="shrink-0 p-1 rounded transition-colors duration-300" :class="showBookmark ? 'hover:bg-orange-100' : 'hover:bg-orange-200'">
           <img src="@/assets/nut-mark.svg" alt="nut mark icon" class="w-4 h-4" :class="showBookmark ? 'opacity-100' : 'opacity-30'">
         </button>
         <!-- folder path -->
-        <div class="flex flex-wrap justify-start items-center gap-1">
-          <div v-for="(folder, index) in props.folderPath" :key="folder.id" class="flex justify-center items-center gap-0.5 text-orange-500">
+        <div class="flex flex-wrap justify-start items-center gap-0.5">
+          <template v-for="folder in props.folderPath" :key="folder.id">
+            <span class="text-orange-500 text-xs select-none">/</span>
             <button :title="useGetTranslation('popup_main_bookmark_folder_section_folder_path_nav_btn_title')" class="px-1.5 py-1 text-xs font-bold rounded transition-colors duration-300"
-            :class="selectFolderType === 'old' && bookmarkFolderId === folder.id ? 'text-green-500 hover:bg-green-100 ' : 'text-orange-500 hover:bg-orange-100 '"
+            :class="selectFolderType === 'old' && bookmarkFolderId === folder.id ? 'text-green-500 hover:bg-green-100' : 'text-orange-500 hover:bg-orange-100'"
             @click="setNodeTreeId(folder.id)">{{ folder.id === '0' ? useGetTranslation('popup_main_bookmark_folder_section_folder_path_nav_root_btn_content') : (folder.title || useGetTranslation('bookmark_folder_default_name')) }}</button>
-            <span v-if="index < props.folderPath.length -1">/</span>
+          </template>
+          <span class="text-orange-500 text-xs select-none">/</span>
+          <button v-if="props.nodeTreeFolder && props.nodeTreeFolder.id !== '0'" class="px-1.5 py-1 text-xs font-bold hover:text-green-500 hover:bg-green-100 rounded transition-colors duration-300"
+              :class="props.nodeTreeFolder && selectFolderType === 'old' && bookmarkFolderId === props.nodeTreeFolder.id ? 'text-green-500' : 'text-orange-500'"
+              @click="setBookmarkFolderId(props.nodeTreeFolder.id)">
+            {{ props.nodeTreeFolder.title || useGetTranslation('bookmark_folder_default_name') }}
+          </button>
+          <div v-if="props.nodeTreeFolder && props.nodeTreeFolder.id === '0'" class="px-1.5 py-1 text-xs font-bold text-orange-500 rounded select-none">
+            {{ useGetTranslation('popup_main_bookmark_folder_section_folder_path_nav_root_btn_content') }}
           </div>
         </div>
       </div>

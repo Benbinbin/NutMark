@@ -6,7 +6,7 @@ import { Icon as Iconify } from '@iconify/vue';
 import FolderGrid from './FolderGrid.vue';
 import SearchFolder from './SearchFolder.vue';
 
-const props = defineProps(['nodeTreeId'])
+const props = defineProps(['nodeTreeId']);
 
 /**
  * select folder
@@ -20,7 +20,7 @@ const bookmarkFolderId = inject('bookmarkFolderId');
 const setBookmarkFolderId = inject('setBookmarkFolderId');
 
 const resetBookmarkFolder = () => {
-  setBookmarkFolderId(bookmarkOriginFolderId.value)
+  setBookmarkFolderId(bookmarkOriginFolderId.value);
 }
 
 // the folder node selected (an object without children property)
@@ -29,8 +29,8 @@ const selectFolderNode = ref(null) // an object
 // get the node tree object
 watch(bookmarkFolderId, async () => {
   if(bookmarkFolderId.value) {
-    const result = await chrome.bookmarks.get(bookmarkFolderId.value)
-    selectFolderNode.value = result[0]
+    const result = await chrome.bookmarks.get(bookmarkFolderId.value);
+    selectFolderNode.value = result[0];
   }
 }, { immediate: true })
 
@@ -42,16 +42,18 @@ const setNewFolder = inject('setNewFolder');
  */
 // node tree (with children property)
 // nodeTreeId is folder id of node tree start point
-const nodeTreeId = ref(props.nodeTreeId)
-const nodeTree = ref(null) // an object (data structure is a tree)
+const nodeTreeId = ref(props.nodeTreeId);
+const nodeTreeFolder = ref(null);
+const nodeTree = ref(null); // an object (data structure is a tree)
+
 
 // set the node tree id manually or automatically
 const setNodeTreeId = (id) => {
-  nodeTreeId.value = id
-  showFolderSearch.value = false
+  nodeTreeId.value = id;
+  showFolderSearch.value = false;
 }
-provide('nodeTreeId', nodeTreeId)
-provide('setNodeTreeId', setNodeTreeId)
+provide('nodeTreeId', nodeTreeId);
+provide('setNodeTreeId', setNodeTreeId);
 
 
 watch(bookmarkOriginFolderId, async () => {
@@ -60,17 +62,17 @@ watch(bookmarkOriginFolderId, async () => {
 
 // watch the nodeTreeId change and get the node tree object
 watch(nodeTreeId, async () => {
-  const result = await chrome.bookmarks.getSubTree(nodeTreeId.value)
-  const targetNodeTree = result[0]
+  const result = await chrome.bookmarks.getSubTree(nodeTreeId.value);
+  const targetNodeTree = result[0];
   // sort the nodeTree children nodes
   // move the folder node to top
   targetNodeTree.children.sort((nodeA, nodeB) => {
     if (nodeA.children && !nodeB.children) {
-      return -1
+      return -1;
     } else if (!nodeA.children && nodeB.children) {
-      return 1
+      return 1;
     } else {
-      return 0
+      return 0;
     }
   })
   nodeTree.value = targetNodeTree
@@ -79,30 +81,34 @@ watch(nodeTreeId, async () => {
 /**
  * folder path in component header navbar
  */
-const folderPath = ref([])
+const folderPath = ref([]);
 
 const getFolderPath = async (id) => {
-  const resultForFolderNode = await chrome.bookmarks.get(id)
-  const folderNode = resultForFolderNode[0]
-  folderPath.value.unshift(folderNode)
+  const resultForFolderNode = await chrome.bookmarks.get(id);
+  const folderNode = resultForFolderNode[0];
+  folderPath.value.unshift(folderNode);
   if (folderNode.parentId) {
     // recursion get the folder path
     // from the node tree top folder to the root folder
-    getFolderPath(folderNode.parentId)
+    getFolderPath(folderNode.parentId);
   }
 }
 
 // watch the nodeTreeId change and update the folder path
 watch(nodeTreeId, async () => {
+  const resultForFolderNode = await chrome.bookmarks.get(nodeTreeId.value);
+  nodeTreeFolder.value = resultForFolderNode[0];
   // reset folder path
-  folderPath.value = []
-  await getFolderPath(nodeTreeId.value)
+  folderPath.value = [];
+  if (nodeTreeFolder.value?.parentId) {
+    await getFolderPath(nodeTreeFolder.value.parentId);
+  }
 }, { immediate: true })
 
 /**
  * search folder
  */
-const showFolderSearch = ref(false)
+const showFolderSearch = ref(false);
 </script>
 
 <template>
@@ -139,7 +145,7 @@ const showFolderSearch = ref(false)
       </div>
     </div>
     <div class="w-full">
-      <FolderGrid v-if="nodeTree" v-show="!showFolderSearch" :folder-path="folderPath" :nodes="nodeTree.children"></FolderGrid>
+      <FolderGrid v-if="nodeTree" v-show="!showFolderSearch" :node-tree-folder="nodeTreeFolder" :folder-path="folderPath" :nodes="nodeTree.children"></FolderGrid>
       <SearchFolder v-show="showFolderSearch" :show-state="showFolderSearch" @hide="showFolderSearch = false"></SearchFolder>
     </div>
   </section>
